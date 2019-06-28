@@ -19,11 +19,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_FOR_SEQUENCE_H_
-#define BOUND_FOR_SEQUENCE_H_
+#ifndef BOUND_UTIL_H_
+#define BOUND_UTIL_H_
 
-#include <functional>
 #include <type_traits>
+#include <tuple>
 #include <utility>
 #include <vector>
 #include <list>
@@ -64,8 +64,18 @@ struct function_traits<R (Class::*)(Args...)>
     template <size_t i>
     struct arg
     {
-        typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+        typedef typename std::tuple_element_t<i, std::tuple<Args...>> type;
     };
+};
+
+// Strips out const, reference, and pointer
+template <typename T>
+struct raw_type
+{
+    using type = typename std::remove_const<
+        typename std::remove_reference<
+            typename std::remove_pointer<
+                T>::type>::type>::type;
 };
 
 // Detects whether anything is a pointer to a class method similar to
@@ -116,6 +126,39 @@ struct is_seq_container<Container<T>>
         value = std::is_same<Container<T>, std::vector<T>>::value ||
                 std::is_same<Container<T>, std::deque<T>>::value ||
                 std::is_same<Container<T>, std::list<T>>::value
+    };
+};
+
+template <typename T>
+struct is_integer
+{
+    enum
+    {
+        // bools are considered "unsigned", so bool checkes are omitted
+        value = std::is_signed<T>::value && std::is_integral<T>::value
+    };
+};
+
+template <typename T>
+struct is_unsigned_integer
+{
+    enum
+    {
+        // floats are considered "signed", so integral check is omitted
+        value = std::is_unsigned<T>::value && !std::is_same<T, bool>::value
+    };
+};
+
+// Returns true if T is
+//  int, uint, float, bool, etc
+//  std::string
+template <typename T>
+struct is_simple_property
+{
+    enum
+    {
+        value = std::is_arithmetic<typename raw_type<T>::type>::value ||
+                std::is_same<std::string, typename raw_type<T>::type>::value
     };
 };
 

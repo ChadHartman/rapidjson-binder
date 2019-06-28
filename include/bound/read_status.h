@@ -19,10 +19,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_READ_ERROR_H_
-#define BOUND_READ_ERROR_H_
+#ifndef BOUND_READ_STATUS_H_
+#define BOUND_READ_STATUS_H_
 
 #include <string>
+#include "property.h"
 
 namespace bound
 {
@@ -50,6 +51,19 @@ public:
     void set_error_message(std::string error_message)
     {
         error_message_ = error_message;
+    }
+
+    std::string ToString() const
+    {
+        if (success())
+        {
+            return "{\"success\":true}";
+        }
+
+        return "{\"success\":false,\"error_message\":\"" +
+               //  TODO: escape quotes
+               error_message_ +
+               "\"}";
     }
 };
 

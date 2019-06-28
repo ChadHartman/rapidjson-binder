@@ -22,8 +22,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_PROPERTY_H_
 #define BOUND_PROPERTY_H_
 
+#include "util.h"
+
 namespace bound
 {
+
+template <typename T>
+struct is_valid_property
+{
+    enum
+    {
+        value = !std::is_const<T>::value &&
+                (util::is_getter<T>::value ||
+                 util::is_setter<T>::value ||
+                 std::is_member_object_pointer<T>::value)
+    };
+};
 
 // Encapsulates a Class property
 //  Adapted from Guillaume Racicot and fiorentinoing's StackOverflow answers:
@@ -42,9 +56,9 @@ struct Property
     const char *name;
 };
 
-// Create a class property helper
 template <typename Class, typename T>
-constexpr auto property(T Class::*member, const char *name)
+constexpr typename std::enable_if<is_valid_property<T Class::*>::value, Property<Class, T>>::type
+property(T Class::*member, const char *name)
 {
     return Property<Class, T>{member, name};
 }

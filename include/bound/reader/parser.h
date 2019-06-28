@@ -19,8 +19,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_PARSER_H_
-#define BOUND_PARSER_H_
+#ifndef BOUND_READER_PARSER_H_
+#define BOUND_READER_PARSER_H_
 
 #include <rapidjson/reader.h>
 #include "event.h"
@@ -47,7 +47,7 @@ private:
 public:
     Parser(Stream &&stream) : stream_{stream} {}
 
-    Event &event()
+    const Event &event()
     {
         return event_;
     }
@@ -61,9 +61,15 @@ public:
             is_reader_started_ = true;
         }
 
+        if (is_reader_complete_)
+        {
+            return false;
+        }
+
         if (reader_.IterativeParseComplete())
         {
             is_reader_complete_ = true;
+            event_.End();
             return false;
         }
 

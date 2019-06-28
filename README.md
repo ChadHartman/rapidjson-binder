@@ -57,4 +57,35 @@ Errors are reported in a `bound::ReadStatus` return value which will provide a d
 * `void set_property(T value)` and `void set_property(T &value)` type setters.
 * `void T property()` and `T& property()` type getters.
 
+## FAQ
 
+### <Type> cannot be used prior to '::' because it has no members
+
+If you see the error:
+
+```
+../include/bound/reader.h:135:58: error: type <Type> cannot be used prior to '::' because it has no members
+    constexpr auto prop_count = std::tuple_size<decltype(T::properties)>::value;
+```
+
+Then the type cannot be de/serialized. For `class` and `struct`s, add a public `constexpr static auto properties = std::make_tuple();` field.
+
+## Changelog
+
+### [1.1.0] - 2019-06-28
+#### Added
+- Conditional writing support
+
+### [1.0.0] - 2019-06-14
+#### Added
+- Initial Release
+- Read/Write C++ objects from/to JSON
+- Support for:
+    - Primatives (`bool`, `int`, `double`, etc...)
+    - `std::string`
+    - `std::deque`
+    - `std::list`
+    - `std::vector`
+    - Any `struct` or `class` with a public `constexpr static properties` `tuple` field.
+    - `void set_property(T value)` and `void set_property(T &value)` type setters.
+    - `void T property()` and `T& property()` type getters.

@@ -122,6 +122,9 @@ int main()
         return -1;
     }
 
+    bound::WriteConfig write_config;
+    write_config.FilterEmptiesAndZeroes();
+
     std::string test_json = ToJson(test);
     printf("\tUser: %s\n\n", test_json.c_str());
 
