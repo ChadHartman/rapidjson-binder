@@ -24,6 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <map>
 
+#include "dyn_prop_parser.h"
 #include "parser.h"
 #include "../read_status.h"
 #include "../util.h"
@@ -81,6 +82,7 @@ class Reader
 {
 private:
     Parser<Stream> &parser_;
+    DynPropParser dyn_prop_parser_;
     bool last_token_was_key_ = false;
 
     // Readies the parser to the correct position for iterative parsing
@@ -258,8 +260,9 @@ private:
             return;
         }
 
-        constexpr auto prop_count = std::tuple_size<decltype(O::properties)>::value;
         bool found = false;
+
+        constexpr auto prop_count = std::tuple_size<decltype(O::properties)>::value;
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
             constexpr auto property = std::get<i>(O::properties);
             if (key != property.name)
@@ -278,7 +281,7 @@ private:
 
         if (!found)
         {
-            status.set_error_message("Object does not have property with name \"" + key + "\".");
+            dyn_prop_parser_.Parse(object, key, parser_);
         }
     }
 
@@ -311,13 +314,15 @@ private:
 
         if (!found)
         {
-            status.set_error_message("Object does not have property with name \"" + key + "\".");
+            dyn_prop_parser_.Parse(object, key, parser_);
         }
     }
 
     // Simple Property reader, needs to exist to compile
     template <typename T>
-    typename std::enable_if_t<util::is_simple_property<T>::value>
+    typename std::enable_if_t<
+        util::is_simple_property<T>::value ||
+        std::is_same<T, DynamicProperties>::value>
     Read(T &instance, ReadStatus &status)
     {
         status.set_error_message("Attempted read of simple property.");
@@ -327,11 +332,15 @@ public:
     Reader(Parser<Stream> &parser)
         : parser_{parser} {}
 
+    Reader(const Reader &) = delete;
+    Reader &operator=(const Reader &) = delete;
+
     // Object
     template <typename T>
     typename std::enable_if_t<
         !util::is_seq_container<T>::value &&
-        !util::is_simple_property<T>::value>
+        !util::is_simple_property<T>::value &&
+        !std::is_same<T, DynamicProperties>::value>
     Read(T &instance, ReadStatus &status)
     {
         std::string key;

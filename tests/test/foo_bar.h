@@ -19,6 +19,7 @@ class Foo
 {
 private:
     Bar bar_;
+    bound::JsonProperties json_properties_;
 
 public:
     Bar &bar()
@@ -34,7 +35,8 @@ public:
     constexpr static auto properties = std::make_tuple(
         bound::property(&Foo::bar_, "bar_property"),
         bound::property(&Foo::bar, "bar"),
-        bound::property(&Foo::set_bar, "bar"));
+        bound::property(&Foo::set_bar, "bar"),
+        bound::property(&Foo::json_properties_));
 };
 
 #endif

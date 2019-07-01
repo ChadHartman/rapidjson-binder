@@ -47,7 +47,7 @@ private:
     //  Setters are unused for serialization
     template <class O, typename M>
     inline typename std::enable_if_t<util::is_setter<M>::value>
-    WriteProperty(O &object, const char *key, M member)
+    WriteProperty(O &object, const char *key, M member, bool write_key)
     {
         // Do nothing
     }
@@ -56,13 +56,16 @@ private:
     //  Method invoked
     template <class O, typename M>
     inline typename std::enable_if_t<util::is_getter<M>::value>
-    WriteProperty(O &object, const char *key, M member)
+    WriteProperty(O &object, const char *key, M member, bool write_key)
     {
         auto value = (object.*(member))();
 
         if (scanner_.Scan(value) > 0)
         {
-            writer_.Key(key);
+            if (write_key)
+            {
+                writer_.Key(key);
+            }
             Write(value);
         }
     }
@@ -71,13 +74,16 @@ private:
     //  Passes reference
     template <class O, typename M>
     inline typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-    WriteProperty(O &object, const char *key, M member)
+    WriteProperty(O &object, const char *key, M member, bool write_key)
     {
         auto &value = object.*(member);
 
         if (scanner_.Scan(value) > 0)
         {
-            writer_.Key(key);
+            if (write_key)
+            {
+                writer_.Key(key);
+            }
             Write(value);
         }
     }
@@ -85,9 +91,21 @@ private:
 public:
     Writer(
         rapidjson::Writer<Stream> &writer,
-        WriteConfig &write_config)
+        const WriteConfig &write_config)
         : writer_(writer),
           scanner_{write_config} {}
+
+    void Write(const DynamicProperties &json_properties)
+    {
+        for (std::pair<std::string, std::string> element : json_properties)
+        {
+            writer_.Key(element.first.c_str());
+            writer_.RawValue(
+                element.second.c_str(),
+                element.second.length(),
+                rapidjson::kStringType);
+        }
+    }
 
     template <typename T>
     typename std::enable_if_t<std::is_pointer<T>::value>
@@ -101,7 +119,8 @@ public:
     typename std::enable_if_t<
         !util::is_simple_property<T>::value &&
         !util::is_seq_container<T>::value &&
-        !std::is_pointer<T>::value>
+        !std::is_pointer<T>::value &&
+        !std::is_same<T, DynamicProperties>::value>
     Write(T &instance)
     {
         writer_.StartObject();
@@ -109,7 +128,7 @@ public:
         constexpr auto prop_count = std::tuple_size<decltype(T::properties)>::value;
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
             constexpr auto property = std::get<i>(T::properties);
-            WriteProperty(instance, property.name, property.member);
+            WriteProperty(instance, property.name, property.member, !property.is_dyn_props);
         });
 
         writer_.EndObject();

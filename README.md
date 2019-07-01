@@ -72,6 +72,12 @@ Then the type cannot be de/serialized. For `class` and `struct`s, add a public `
 
 ## Changelog
 
+### [1.2.0] - 2019-07-01
+#### Added
+- Added support for unbound keys: 
+    - Store in a `bound::DynamicProperties` collection
+    - Recursively Skip if a `bound::DynamicProperties` is not provided
+
 ### [1.1.0] - 2019-06-28
 #### Added
 - Conditional writing support

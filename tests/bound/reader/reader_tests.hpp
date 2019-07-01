@@ -76,6 +76,46 @@ TEST_CASE("Reader tests", "[reader]")
             REQUIRE(status.error_message().length() > 0);
         }
     }
+
+    SECTION("Invalid Keys")
+    {
+        std::string foo_json = "{\"bar\":{"
+                               "\"string\":\"baz\","
+                               "\"array\":[1,2,3],"
+                               "\"integer\":-100},"
+                               "\"alpha\":{\"beta\":1},"
+                               "\"gamma\":[true],"
+                               "\"delta\":\"value\""
+                               "}";
+
+        SECTION("Read object")
+        {
+            bound::reader::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(foo_json.c_str())};
+            bound::reader::Reader<rapidjson::StringStream>{parser}.Read(foo, status);
+            if (!status.success())
+            {
+                printf("Failure: %s\n", status.error_message().c_str());
+            }
+
+            REQUIRE(status.success());
+            TestFoo(foo);
+        }
+
+        SECTION("Read array")
+        {
+            std::vector<Foo> array;
+            std::string array_json = "[" + foo_json + "]";
+            bound::reader::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(array_json.c_str())};
+            bound::reader::Reader<rapidjson::StringStream>{parser}.Read(array, status);
+            if (!status.success())
+            {
+                printf("Failure: %s\n", status.error_message().c_str());
+            }
+            REQUIRE(status.success());
+            REQUIRE(1 == array.size());
+            TestFoo(array[0]);
+        }
+    }
 }
 
 } // namespace reader_tests

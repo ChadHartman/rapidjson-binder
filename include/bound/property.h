@@ -22,10 +22,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_PROPERTY_H_
 #define BOUND_PROPERTY_H_
 
+#include <map>
 #include "util.h"
 
 namespace bound
 {
+
+typedef std::map<std::string, std::string> DynamicProperties;
 
 template <typename T>
 struct is_valid_property
@@ -49,18 +52,34 @@ struct Property
         : member{member},
           name{name} {}
 
+    constexpr Property(DynamicProperties Class::*member)
+        : member{member},
+          name{""} {}
+
     using Type = T;
 
     T Class::*member;
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
+    const bool is_dyn_props = std::is_same<T, DynamicProperties>::value;
 };
 
 template <typename Class, typename T>
-constexpr typename std::enable_if<is_valid_property<T Class::*>::value, Property<Class, T>>::type
+constexpr typename std::enable_if<
+    is_valid_property<T Class::*>::value,
+    Property<Class, T>>::type
 property(T Class::*member, const char *name)
 {
     return Property<Class, T>{member, name};
+}
+
+template <typename Class>
+constexpr typename std::enable_if<
+    std::is_member_object_pointer<DynamicProperties Class::*>::value,
+    Property<Class, DynamicProperties>>::type
+property(DynamicProperties Class::*member)
+{
+    return Property<Class, DynamicProperties>{member};
 }
 
 } // namespace bound

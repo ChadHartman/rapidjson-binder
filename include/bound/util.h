@@ -28,6 +28,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vector>
 #include <list>
 #include <deque>
+#include <string>
 
 namespace bound
 {

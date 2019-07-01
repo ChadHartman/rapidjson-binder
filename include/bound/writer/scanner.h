@@ -70,6 +70,11 @@ public:
         return Scan(*value);
     }
 
+    unsigned int Scan(DynamicProperties &json_properties)
+    {
+        return json_properties.size();
+    }
+
     // Scan Object
     // Returns count of printable properties
     template <typename T>

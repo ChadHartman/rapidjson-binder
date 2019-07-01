@@ -23,9 +23,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_BOUND_H_
 
 #define BOUND_MAJOR_VERSION 1
-#define BOUND_MINOR_VERSION 1
+#define BOUND_MINOR_VERSION 2
 #define BOUND_PATCH_VERSION 0
-#define BOUND_VERSION_STRING "1.1.0"
+#define BOUND_VERSION_STRING "1.2.0"
 
 #ifdef _WIN32
 #define BOUND_BOUND_H_READ_MODE "rb"
@@ -46,6 +46,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace bound
 {
 
+typedef std::map<std::string, std::string> JsonProperties;
+
 // Read from json string.
 // Example:
 //      User user;
@@ -55,7 +57,7 @@ namespace bound
 template <class T>
 //typename std::enable_if<util::is_object<T>::value, const ReadStatus>::type
 const ReadStatus
-FromJson(std::string &json, T &object)
+FromJson(const std::string &json, T &object)
 {
     ReadStatus status;
     reader::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
@@ -69,7 +71,7 @@ FromJson(std::string &json, T &object)
 //      ReadJson("user.json", user);
 // Returns a ReadStatus instance.
 template <class T>
-const ReadStatus FromJsonFile(std::string filename, T &object)
+const ReadStatus FromJsonFile(const std::string filename, T &object)
 {
     ReadStatus status;
     char buffer[65536];
@@ -103,7 +105,7 @@ inline std::string ToJson(T &instance)
 //    std::string user_json = Write(user);
 //  Returns the json string.
 template <typename T>
-std::string ToJson(T &instance, WriteConfig &write_config)
+std::string ToJson(T &instance, const WriteConfig &write_config)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -116,7 +118,7 @@ std::string ToJson(T &instance, WriteConfig &write_config)
 //      Write(user, "assets/data/user.json");
 //  Returns whether the write was successful.
 template <typename T>
-inline bool ToJsonFile(T &instance, std::string filename)
+inline bool ToJsonFile(T &instance, const std::string filename)
 {
     WriteConfig write_config;
     return ToJsonFile(instance, filename, write_config);
@@ -127,7 +129,7 @@ inline bool ToJsonFile(T &instance, std::string filename)
 //      Write(user, "assets/data/user.json");
 //  Returns whether the write was successful.
 template <typename T>
-bool ToJsonFile(T &instance, std::string filename, WriteConfig &write_config)
+bool ToJsonFile(T &instance, const std::string filename, const WriteConfig &write_config)
 {
     FILE *fp = fopen(filename.c_str(), BOUND_BOUND_H_WRITE_MODE);
     if (fp)

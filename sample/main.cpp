@@ -15,6 +15,8 @@ private:
     std::string string_private_;
     std::string string_property_;
 
+    bound::DynamicProperties addl_props_;
+
 public:
     std::deque<std::string> &list_string_getter() { return list_string_private_; };
     void list_string_setter(std::deque<std::string> &value) { list_string_private_ = value; };
@@ -29,7 +31,9 @@ public:
 
         property(&Bar::string_property_, "string_property"),
         property(&Bar::string_getter, "string_getter_setter"),
-        property(&Bar::string_setter, "string_getter_setter"));
+        property(&Bar::string_setter, "string_getter_setter"),
+        
+        property(&Bar::addl_props_));
 };
 
 struct Foo

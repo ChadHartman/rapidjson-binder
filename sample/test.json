@@ -1,7 +1,12 @@
 {
     "bar_property": {
         "list_string_property": ["list", "string", "property"],
-        "list_string_getter_setter": ["list", "string", "getter", "setter"]
+        "list_string_getter_setter": ["list", "string", "getter", "setter"],
+        "alpha": "beta",
+        "gamma": {
+            "delta": 6
+        },
+        "epsilon": [true]
     },
 
     "bar_getter_setter": {

@@ -73,7 +73,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Null()
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Null\n");
+        printf("<Null/>\n");
 #endif
 
         type = Type::kTypeNull;
@@ -84,7 +84,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Bool(bool b)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Bool %s\n", b ? "true" : "false");
+        printf("<Bool value=\"%s\"/>\n", b ? "true" : "false");
 #endif
 
         value.bool_value = b;
@@ -96,7 +96,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Int(int i)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Int %d\n", i);
+        printf("<Int value=\"%d\"/>\n", i);
 #endif
 
         value.int_value = i;
@@ -108,7 +108,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Uint(unsigned u)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Uint %d\n", u);
+        printf("<Uint value=\"%d\"/>\n", u);
 #endif
 
         value.unsigned_value = u;
@@ -120,7 +120,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Int64(int64_t i)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Int64 %lld\n", i);
+        printf("<Int64 value=\"%lld\"/>\n", i);
 #endif
 
         value.int64_t_value = i;
@@ -132,7 +132,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Uint64(uint64_t u)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Uint64 %llu\n", u);
+        printf("<Uint64 value=\"%llu\"/>\n", u);
 #endif
 
         value.uint64_t_value = u;
@@ -144,7 +144,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Double(double d)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Double %f\n", d);
+        printf("<Double value=\"%f\"/>\n", d);
 #endif
 
         value.double_value = d;
@@ -156,7 +156,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool String(const char *str, rapidjson::SizeType length, bool copy)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> String \"%s\"\n", str);
+        printf("<String value=\"%s\"/>\n", str);
 #endif
 
         string_value = str;
@@ -168,7 +168,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool StartObject()
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> StartObject\n");
+        printf("<Object>\n");
 #endif
 
         type = Type::kTypeStartObject;
@@ -179,7 +179,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool Key(const char *str, rapidjson::SizeType length, bool copy)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> Key \"%s\"\n", str);
+        printf("<Key value=\"%s\"/>\n", str);
 #endif
 
         string_value = str;
@@ -191,7 +191,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool EndObject(rapidjson::SizeType memberCount)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> EndObject\n");
+        printf("</Object>\n");
 #endif
 
         type = Type::kTypeEndObject;
@@ -208,7 +208,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool StartArray()
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> StartArray\n");
+        printf("<Array>\n");
 #endif
 
         type = Type::kTypeStartArray;
@@ -219,12 +219,27 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     bool EndArray(rapidjson::SizeType elementCount)
     {
 #ifdef BOUND_READER_EVENT_H_DEBUG
-        printf(">>> EndArray\n");
+        printf("</Array>\n");
 #endif
 
         type = Type::kTypeEndArray;
 
         return true;
+    }
+
+    bool IsSimple() const
+    {
+        const static unsigned long simple_value =
+            Event::kTypeNull |
+            Event::kTypeBool |
+            Event::kTypeInt |
+            Event::kTypeUint |
+            Event::kTypeInt64 |
+            Event::kTypeUint64 |
+            Event::kTypeDouble |
+            Event::kTypeString;
+
+        return type & simple_value;
     }
 
     const std::string ToString() const
@@ -291,7 +306,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
         case Event::kTypeEndObject:
             response = "{\"type\":\"EndObject\"}";
             break;
-            
+
         case Event::kTypeEnd:
             response = "{\"type\":\"End\"}";
             break;
