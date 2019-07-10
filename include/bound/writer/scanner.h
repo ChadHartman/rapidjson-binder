@@ -48,7 +48,8 @@ private:
     typename std::enable_if_t<util::is_getter<M>::value, unsigned int>
     ScanProperty(I &instance, const char *key, M member)
     {
-        return Scan((instance.*(member))());
+        auto value = (instance.*(member))();
+        return Scan(value);
     }
 
     // Setter

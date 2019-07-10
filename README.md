@@ -72,6 +72,10 @@ Then the type cannot be de/serialized. For `class` and `struct`s, add a public `
 
 ## Changelog
 
+### [1.2.1] - 2019-07-09
+#### Fixed
+- `scanner.h:151:5 expects an l-value for 1st argument` bug
+
 ### [1.2.0] - 2019-07-01
 #### Added
 - Added support for unbound keys: 
