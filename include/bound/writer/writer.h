@@ -46,7 +46,9 @@ private:
     // Setter property
     //  Setters are unused for serialization
     template <class O, typename M>
-    inline typename std::enable_if_t<util::is_setter<M>::value>
+    inline typename std::enable_if_t<
+        util::is_setter<M>::value ||
+        util::is_authorizer<M>::value>
     WriteProperty(O &object, const char *key, M member, bool write_key)
     {
         // Do nothing
@@ -125,9 +127,9 @@ public:
     {
         writer_.StartObject();
 
-        constexpr auto prop_count = std::tuple_size<decltype(T::properties)>::value;
+        constexpr auto prop_count = std::tuple_size<decltype(T::BOUND_PROPS_NAME)>::value;
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-            constexpr auto property = std::get<i>(T::properties);
+            constexpr auto property = std::get<i>(T::BOUND_PROPS_NAME);
             WriteProperty(instance, property.name, property.member, !property.is_dyn_props);
         });
 

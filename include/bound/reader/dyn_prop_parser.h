@@ -192,11 +192,11 @@ public:
     void
     Parse(O &object, std::string &key, Parser<Stream> &parser)
     {
-        constexpr auto prop_count = std::tuple_size<decltype(O::properties)>::value;
+        constexpr auto prop_count = std::tuple_size<decltype(O::BOUND_PROPS_NAME)>::value;
         bool found = false;
 
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-            constexpr auto property = std::get<i>(O::properties);
+            constexpr auto property = std::get<i>(O::BOUND_PROPS_NAME);
 
             if (property.is_dyn_props)
             {

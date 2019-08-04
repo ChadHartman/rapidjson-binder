@@ -23,6 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_WRITER_SCANNER_H_
 
 #include "../write_config.h"
+#include "authorizer.h"
 
 namespace bound
 {
@@ -54,7 +55,7 @@ private:
 
     // Setter
     template <typename I, typename M>
-    typename std::enable_if_t<util::is_setter<M>::value, unsigned int>
+    typename std::enable_if_t<util::is_setter<M>::value || util::is_authorizer<M>::value, unsigned int>
     ScanProperty(I &instance, const char *key, M member)
     {
         // Do nothing
@@ -88,10 +89,17 @@ public:
     {
         unsigned int count = 0;
 
-        constexpr auto prop_count = std::tuple_size<decltype(T::properties)>::value;
+        Authorizer<T> authorizer{instance};
+
+        constexpr auto prop_count = std::tuple_size<decltype(T::BOUND_PROPS_NAME)>::value;
 
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-            constexpr auto property = std::get<i>(T::properties);
+            constexpr auto property = std::get<i>(T::BOUND_PROPS_NAME);
+            if (!authorizer.Authorize(property.name))
+            {
+                return;
+            }
+
             count += ScanProperty(instance, property.name, property.member);
         });
 

@@ -188,6 +188,44 @@ TEST_CASE("object array tests", "[array_of_objects]")
     REQUIRE(json == bound::ToJson(object));
 }
 
+struct AuthorizerChild
+{
+    bool authorize(const char *name)
+    {
+        return age != 4;
+    }
+
+    unsigned age;
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&AuthorizerChild::age, "age"),
+        bound::property(&AuthorizerChild::authorize));
+};
+
+TEST_CASE("Authorizer tests", "[object]")
+{
+    test::PropClass<AuthorizerChild> object;
+    std::string json{"{\"alpha\":{\"age\":3},\"beta\":{\"age\":4},\"gamma\":{\"age\":5},\"delta\":{\"age\":6}}"};
+    bound::ReadStatus status = bound::FromJson(json, object);
+
+    if (!status.success())
+    {
+        printf("Failure: %s\n", status.error_message().c_str());
+    }
+
+    REQUIRE(status.success());
+
+    REQUIRE(3 == object.alpha.age);
+
+    REQUIRE(4 == object.beta().age);
+    REQUIRE(5 == object.gamma().age);
+    REQUIRE(6 == object.delta()->age);
+
+    bound::WriteConfig write_config;
+    write_config.FilterEmptiesAndZeroes();
+
+    REQUIRE("{\"alpha\":{\"age\":3},\"gamma\":{\"age\":5},\"delta\":{\"age\":6}}" == bound::ToJson(object, write_config));
+}
+
 } // namespace prop_class_tests
 
 #endif

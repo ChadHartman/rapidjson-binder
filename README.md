@@ -72,6 +72,13 @@ Then the type cannot be de/serialized. For `class` and `struct`s, add a public `
 
 ## Changelog
 
+### [1.3.0] - 2019-08-03
+#### Added
+- Custom `properties` name override
+    - `#define BOUND_PROPS_NAME kAlternativePropertiesName` before including `bound.h`
+- "Authorizer" feature
+    - Register a `bool authorize(const char *)` class method in the properties object that returns whether to write a property with the name passed in the authorizer method
+
 ### [1.2.1] - 2019-07-09
 #### Fixed
 - `scanner.h:151:5 expects an l-value for 1st argument` bug

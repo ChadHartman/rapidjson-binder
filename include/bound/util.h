@@ -86,13 +86,12 @@ struct is_setter : std::false_type
 {
 };
 
-template <typename R, class Class, typename... Args>
-struct is_setter<R (Class::*)(Args...)>
+template <class Class, typename V>
+struct is_setter<void (Class::*)(V)>
 {
     enum
     {
-        value = function_traits<R (Class::*)(Args...)>::arg_count == 1 &&
-                std::is_same<void, typename function_traits<R (Class::*)(Args...)>::return_type>::value
+        value = !std::is_same<void, V>::value
     };
 };
 
@@ -103,14 +102,25 @@ struct is_getter : std::false_type
 {
 };
 
-template <typename R, class Class, typename... Args>
-struct is_getter<R (Class::*)(Args...)>
+template <typename R, class Class>
+struct is_getter<R (Class::*)()>
 {
     enum
     {
-        value = function_traits<R (Class::*)(Args...)>::arg_count == 0 &&
-                !std::is_same<void, typename function_traits<R (Class::*)(Args...)>::return_type>::value
+        value = !std::is_same<void, R>::value
     };
+};
+
+// Detects whether anything is a pointer to a class method similar to
+// the `T method_name()` signature
+template <typename T>
+struct is_authorizer : std::false_type
+{
+};
+
+template <class Class>
+struct is_authorizer<bool (Class::*)(const char*)> : std::true_type
+{
 };
 
 // Detects whether anything is a deque, list, or vector

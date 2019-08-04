@@ -162,10 +162,10 @@ private:
 
     // Getter Setter for simple value (does nothing)
     template <typename M, typename O, typename V>
-    typename std::enable_if_t<util::is_getter<M>::value>
+    typename std::enable_if_t<util::is_getter<M>::value || util::is_authorizer<M>::value>
     SetValue(O &object, M member, V &value, ReadStatus &status)
     {
-        // getters unused to reading
+        // getters/authorizers are unused to reading
     }
 
     // Setter setter for simple value
@@ -215,10 +215,10 @@ private:
 
     // Getter setter for complex values (does nothing)
     template <typename M, typename O>
-    typename std::enable_if_t<util::is_getter<M>::value>
+    typename std::enable_if_t<util::is_getter<M>::value || util::is_authorizer<M>::value>
     SetValue(O &object, M member, ReadStatus &status)
     {
-        // getters unused to reading
+        // getters/authorizers unused in reading
     }
 
     // Setter Setter for complex values
@@ -262,9 +262,9 @@ private:
 
         bool found = false;
 
-        constexpr auto prop_count = std::tuple_size<decltype(O::properties)>::value;
+        constexpr auto prop_count = std::tuple_size<decltype(O::BOUND_PROPS_NAME)>::value;
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-            constexpr auto property = std::get<i>(O::properties);
+            constexpr auto property = std::get<i>(O::BOUND_PROPS_NAME);
             if (key != property.name)
             {
                 return;
@@ -294,10 +294,10 @@ private:
             return;
         }
 
-        constexpr auto prop_count = std::tuple_size<decltype(O::properties)>::value;
+        constexpr auto prop_count = std::tuple_size<decltype(O::BOUND_PROPS_NAME)>::value;
         bool found = false;
         util::for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-            constexpr auto property = std::get<i>(O::properties);
+            constexpr auto property = std::get<i>(O::BOUND_PROPS_NAME);
             if (key != property.name)
             {
                 return;

@@ -56,12 +56,15 @@ struct Property
         : member{member},
           name{""} {}
 
-    using Type = T;
+    constexpr Property(bool Class::*member)
+        : member{member},
+          name{""} {}
 
     T Class::*member;
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
     const bool is_dyn_props = std::is_same<T, DynamicProperties>::value;
+    const bool is_authorizer = util::is_authorizer<T Class::*>::value;
 };
 
 template <typename Class, typename T>
@@ -80,6 +83,15 @@ constexpr typename std::enable_if<
 property(DynamicProperties Class::*member)
 {
     return Property<Class, DynamicProperties>{member};
+}
+
+template <typename Class, typename T>
+constexpr typename std::enable_if<
+    util::is_authorizer<T Class::*>::value,
+    Property<Class, T>>::type
+property(T Class::*member)
+{
+    return Property<Class, T>{member, ""};
 }
 
 } // namespace bound

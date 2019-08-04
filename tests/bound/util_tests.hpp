@@ -22,6 +22,11 @@ struct Foo
     void method()
     {
     }
+
+    bool authorizer(const char *name)
+    {
+        return true;
+    }
 };
 
 TEST_CASE("Getter Setter Tests", "[util-is_getter]")
@@ -30,15 +35,22 @@ TEST_CASE("Getter Setter Tests", "[util-is_getter]")
     using GetterType = decltype(&Foo<Type>::getter);
     using SetterType = decltype(&Foo<Type>::setter);
     using MethodType = decltype(&Foo<Type>::method);
+    using AuthorizerType = decltype(&Foo<Type>::authorizer);
 
     REQUIRE(bound::util::is_getter<GetterType>::value);
     REQUIRE(bound::util::is_setter<SetterType>::value);
+
+    REQUIRE(!bound::util::is_setter<Type>::value);
+    REQUIRE(!bound::util::is_getter<Type>::value);
 
     REQUIRE(!bound::util::is_setter<GetterType>::value);
     REQUIRE(!bound::util::is_getter<SetterType>::value);
 
     REQUIRE(!bound::util::is_setter<MethodType>::value);
     REQUIRE(!bound::util::is_getter<MethodType>::value);
+
+    REQUIRE(!bound::util::is_setter<AuthorizerType>::value);
+    REQUIRE(!bound::util::is_getter<AuthorizerType>::value);
 }
 
 TEST_CASE("Is Sequential Container Tests", "[util-is_seq_container]")
@@ -95,6 +107,22 @@ TEST_CASE("Is Simple Property", "[util-is_simple_property]")
     REQUIRE(bound::util::is_simple_property<std::string>::value);
     REQUIRE(!bound::util::is_simple_property<Foo<int>>::value);
     REQUIRE(!bound::util::is_simple_property<std::vector<int>>::value);
+}
+
+TEST_CASE("Is Authorizer", "[util-is_authorizer]")
+{
+
+    using Type = int;
+    using GetterType = decltype(&Foo<Type>::getter);
+    using SetterType = decltype(&Foo<Type>::setter);
+    using MethodType = decltype(&Foo<Type>::method);
+    using AuthorizerType = decltype(&Foo<Type>::authorizer);
+
+    REQUIRE(!bound::util::is_authorizer<Type>::value);
+    REQUIRE(!bound::util::is_authorizer<GetterType>::value);
+    REQUIRE(!bound::util::is_authorizer<SetterType>::value);
+    REQUIRE(!bound::util::is_authorizer<MethodType>::value);
+    REQUIRE(bound::util::is_authorizer<AuthorizerType>::value);
 }
 
 } // namespace util_tests

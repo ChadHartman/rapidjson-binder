@@ -46,6 +46,10 @@ public:
         delta_ = *delta;
     }
 
+    bool authorizer(const char *name) {
+        return true;
+    }
+
     constexpr static auto properties = std::make_tuple(
         bound::property(&PropClass::alpha, "alpha"),
         bound::property(&PropClass::beta, "beta"),
@@ -53,7 +57,8 @@ public:
         bound::property(&PropClass::gamma, "gamma"),
         bound::property(&PropClass::set_gamma, "gamma"),
         bound::property(&PropClass::delta, "delta"),
-        bound::property(&PropClass::set_delta, "delta"));
+        bound::property(&PropClass::set_delta, "delta"),
+        bound::property(&PropClass::authorizer));
 };
 
 } // namespace test
