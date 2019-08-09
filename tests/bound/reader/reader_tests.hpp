@@ -115,6 +115,22 @@ TEST_CASE("Reader tests", "[reader]")
             REQUIRE(1 == array.size());
             TestFoo(array[0]);
         }
+
+        SECTION("String conversion")
+        {
+            Bar bar;
+            bound::FromJson("{\"string\":33.33}", bar);
+            REQUIRE(test::fp_equals(33.33, atof(bar.s.c_str())));
+
+            bound::FromJson("{\"string\":33}", bar);
+            REQUIRE("33" == bar.s);
+
+            bound::FromJson("{\"string\":true}", bar);
+            REQUIRE("true" == bar.s);
+
+            bound::FromJson("{\"string\":\"bar\"}", bar);
+            REQUIRE("bar" == bar.s);
+        }
     }
 }
 

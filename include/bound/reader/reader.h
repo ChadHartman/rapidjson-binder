@@ -28,43 +28,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "parser.h"
 #include "../read_status.h"
 #include "../util.h"
+#include "assign.h"
 
 namespace bound
 {
 
 namespace reader
 {
-
-template <typename A, typename B>
-struct is_assignable
-{
-    enum
-    {
-        value = std::is_same<A, B>::value ||
-                std::is_assignable<A, B>::value
-    };
-};
-
-template <typename A, typename B>
-struct is_convertable
-{
-    enum
-    {
-        value = !is_assignable<A, B>::value &&
-                std::is_arithmetic<A>::value &&
-                std::is_arithmetic<B>::value
-    };
-};
-
-template <typename A, typename B>
-struct is_unassignable
-{
-    enum
-    {
-        value = !is_assignable<A, B>::value &&
-                !is_convertable<A, B>::value
-    };
-};
 
 template <typename T>
 struct setter_arg
@@ -115,6 +85,10 @@ private:
         {
             array.push_back(child);
         }
+        else
+        {
+            status.set_error_message("Error adding item " + parser_.event().ToString() + "; " + status.error_message());
+        }
     }
 
     // Add complex item (located in parser) to array
@@ -124,38 +98,6 @@ private:
         T child;
         Read(child, status);
         array.push_back(child);
-    }
-
-    // === object operations === //
-
-    // Simple assign
-    template <typename A, typename B>
-    typename std::enable_if_t<is_assignable<A, B>::value>
-    Assign(A &a, B &b, ReadStatus &status)
-    {
-        a = b;
-    }
-
-    // Conversion assign
-    template <typename A, typename B>
-    typename std::enable_if_t<is_convertable<A, B>::value>
-    Assign(A &a, B &b, ReadStatus &status)
-    {
-        a = static_cast<A>(b);
-    }
-
-    // Incompatible assignment
-    template <typename A, typename B>
-    typename std::enable_if_t<is_unassignable<A, B>::value>
-    Assign(A &a, B &b, ReadStatus &status)
-    {
-        status.set_error_message(
-            "Cannot assign event: " +
-            parser_.event().ToString() +
-            " type \"" +
-            typeid(A).name() +
-            "\" to type \"" +
-            typeid(B).name() + "\".");
     }
 
     // --- object simple setters --- //
@@ -184,6 +126,10 @@ private:
         {
             CallSetter(object, member, arg);
         }
+        else
+        {
+            status.set_error_message("Error setting item " + parser_.event().ToString() + "; " + status.error_message());
+        }
     }
 
     // Property Setter for simple value
@@ -192,7 +138,12 @@ private:
     typename std::enable_if_t<std::is_member_object_pointer<M>::value>
     SetValue(O &object, M member, V &value, ReadStatus &status)
     {
+        printf("%s\n", parser_.event().ToString().c_str());
         Assign(object.*(member), value, status);
+        if (!status.success())
+        {
+            status.set_error_message("Error setting item " + parser_.event().ToString() + "; " + status.error_message());
+        }
     }
 
     // --- object complex setters --- //
