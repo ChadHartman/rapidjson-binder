@@ -18,7 +18,8 @@ void ListProperties(T &object, F &&f)
 {
     constexpr auto prop_count = std::tuple_size<decltype(T::BOUND_PROPS_NAME)>::value;
     for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
-        f(std::get<i>(T::BOUND_PROPS_NAME));
+        constexpr auto property = std::get<i>(T::BOUND_PROPS_NAME);
+        f(property);
     });
 }
 

@@ -33,7 +33,7 @@ void FromJson(const std::string &&json, T &object)
 template <typename T>
 std::string ToJson(T &object)
 {
-    return write::Write(object);
+    return write::ToJson(object);
 }
 
 } // namespace bound
