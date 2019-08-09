@@ -79,6 +79,17 @@ struct Convertible
     }
 };
 
+struct ConstChild
+{
+    std::string value() const
+    {
+        return "value";
+    }
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&ConstChild::value, "value"));
+};
+
 TEST_CASE("Writer Tests", "[writer_tests]")
 {
     SECTION("String Tests")
@@ -135,6 +146,12 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":{\"value\":-1},\"beta\":{\"value\":2},\"gamma\":{\"value\":-1},\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
             bound::write::ToJson(foo));
+    }
+
+    SECTION("const Child<int> Tests")
+    {
+        const ConstChild const_child;
+        REQUIRE("{\"value\":\"value\"}" == bound::write::ToJson(const_child));
     }
 
     SECTION("Foo<Array<string>> Tests")

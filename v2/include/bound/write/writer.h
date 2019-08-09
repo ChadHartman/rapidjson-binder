@@ -70,7 +70,7 @@ public:
 
     template <typename T>
     typename std::enable_if_t<std::is_pointer<T>::value>
-    Write(T pointer)
+    Write(const T pointer)
     {
         if (pointer == NULL)
         {
@@ -115,7 +115,7 @@ public:
         writer_.String(value.c_str());
     }
 
-    void Write(JsonRaw value)
+    void Write(const JsonRaw value)
     {
         writer_.RawValue(
             value.value.c_str(),
