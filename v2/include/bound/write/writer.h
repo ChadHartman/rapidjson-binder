@@ -67,9 +67,38 @@ public:
         writer_.EndArray();
     }
 
+    template <typename T>
+    typename std::enable_if_t<std::is_pointer<T>::value>
+    Write(T pointer)
+    {
+        if (pointer == NULL)
+        {
+            writer_.Null();
+        }
+        else
+        {
+            Write(*pointer);
+        }
+    }
+
     void Write(const bool value)
     {
         writer_.Bool(value);
+    }
+
+    void Write(const int64_t value)
+    {
+        writer_.Int64(value);
+    }
+
+    void Write(const uint16_t value)
+    {
+        writer_.Uint64(value);
+    }
+
+    void Write(const double value)
+    {
+        writer_.Double(value);
     }
 
     void Write(const std::string &value)
