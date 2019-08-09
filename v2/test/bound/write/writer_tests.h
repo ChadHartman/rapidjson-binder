@@ -60,7 +60,16 @@ public:
 };
 
 template <typename T>
-struct Bar
+struct Child
+{
+    T value;
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&Child::value, "value"));
+};
+
+template <typename T>
+struct Convertible
 {
     T value;
 
@@ -112,46 +121,74 @@ TEST_CASE("Writer Tests", "[writer_tests]")
             bound::write::ToJson(foo));
     }
 
+    SECTION("Child<string> Tests")
+    {
+        Foo<Child<std::string>> foo{{"alpha"}, {"beta"}};
+        REQUIRE(
+            "{\"alpha\":{\"value\":\"alpha\"},\"beta\":{\"value\":\"beta\"},\"gamma\":{\"value\":\"alpha\"},\"gamma_null\":null,\"delta\":{\"value\":\"alpha\"},\"epsilon\":{\"value\":\"alpha\"},\"zeta\":{\"value\":\"alpha\"}}" ==
+            bound::write::ToJson(foo));
+    }
+
+    SECTION("Child<int> Tests")
+    {
+        Foo<Child<int>> foo{{-1}, {2}};
+        REQUIRE(
+            "{\"alpha\":{\"value\":-1},\"beta\":{\"value\":2},\"gamma\":{\"value\":-1},\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
+            bound::write::ToJson(foo));
+    }
+
+    SECTION("Array<string> Tests")
+    {
+        std::vector<std::string> array = {"alpha", "beta"};
+        REQUIRE("[\"alpha\",\"beta\"]" == bound::write::ToJson(array));
+    }
+
+    SECTION("Array<int> Tests")
+    {
+        std::vector<int> array = {-1, 2};
+        REQUIRE("[-1,2]" == bound::write::ToJson(array));
+    }
+
     SECTION("JsonRaw Tests")
     {
-        Bar<bound::JsonRaw> bar;
-        bar.value.value = "{\"dynamic-key\":true}";
-        REQUIRE(bar.value.value == bound::write::ToJson(bar));
+        Convertible<bound::JsonRaw> convertible;
+        convertible.value.value = "{\"dynamic-key\":true}";
+        REQUIRE(convertible.value.value == bound::write::ToJson(convertible));
     }
 
     SECTION("JsonString Tests")
     {
-        Bar<bound::JsonString> bar;
-        bar.value.value = "Some string value with \"quotes\", and \"{\"";
-        REQUIRE("\"Some string value with \\\"quotes\\\", and \\\"{\\\"\"" == bound::write::ToJson(bar));
+        Convertible<bound::JsonString> convertible;
+        convertible.value.value = "Some string value with \"quotes\", and \"{\"";
+        REQUIRE("\"Some string value with \\\"quotes\\\", and \\\"{\\\"\"" == bound::write::ToJson(convertible));
     }
 
     SECTION("JsonDouble Tests")
     {
-        Bar<bound::JsonDouble> bar;
-        bar.value.value = 33.33;
-        REQUIRE("33.33" == bound::write::ToJson(bar));
+        Convertible<bound::JsonDouble> convertible;
+        convertible.value.value = 33.33;
+        REQUIRE("33.33" == bound::write::ToJson(convertible));
     }
 
     SECTION("JsonBool Tests")
     {
-        Bar<bound::JsonBool> bar;
-        bar.value.value = true;
-        REQUIRE("true" == bound::write::ToJson(bar));
+        Convertible<bound::JsonBool> convertible;
+        convertible.value.value = true;
+        REQUIRE("true" == bound::write::ToJson(convertible));
     }
 
     SECTION("JsonInt Tests")
     {
-        Bar<bound::JsonInt> bar;
-        bar.value.value = -1000;
-        REQUIRE("-1000" == bound::write::ToJson(bar));
+        Convertible<bound::JsonInt> convertible;
+        convertible.value.value = -1000;
+        REQUIRE("-1000" == bound::write::ToJson(convertible));
     }
 
     SECTION("JsonUint Tests")
     {
-        Bar<bound::JsonUint> bar;
-        bar.value.value = 255;
-        REQUIRE("255" == bound::write::ToJson(bar));
+        Convertible<bound::JsonUint> convertible;
+        convertible.value.value = 255;
+        REQUIRE("255" == bound::write::ToJson(convertible));
     }
 }
 
