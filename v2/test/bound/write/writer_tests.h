@@ -182,6 +182,26 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE("[-1,2]" == bound::write::ToJson(array));
     }
 
+    SECTION("Foo<Map<string>> Tests")
+    {
+        Foo<std::map<std::string, std::string>> foo{{{"foo", "bar"}}, {{"alpha", "beta"}}};
+        REQUIRE("{\"alpha\":{\"foo\":\"bar\"},\"beta\":{\"alpha\":\"beta\"},\"gamma\":{\"foo\":\"bar\"},"
+                "\"gamma_null\":null,\"delta\":{\"foo\":\"bar\"},\"epsilon\":{\"foo\":\"bar\"},\"zeta\":"
+                "{\"foo\":\"bar\"}}" == bound::write::ToJson(foo));
+    }
+
+    SECTION("Map<string> Tests")
+    {
+        std::map<std::string, std::string> map{{"foo", "bar"}};
+        REQUIRE("{\"foo\":\"bar\"}" == bound::write::ToJson(map));
+    }
+
+    SECTION("Map<int> Tests")
+    {
+        std::map<std::string, int> map{{"foo", -11}};
+        REQUIRE("{\"foo\":-11}" == bound::write::ToJson(map));
+    }
+
     SECTION("JsonRaw Tests")
     {
         Convertible<bound::JsonRaw> convertible;

@@ -55,6 +55,20 @@ public:
     }
 
     template <typename T>
+    void Write(std::map<std::string, T> &object)
+    {
+        writer_.StartObject();
+
+        for (auto &i : object)
+        {
+            writer_.Key(i.first.c_str());
+            Write(i.second);
+        }
+
+        writer_.EndObject();
+    }
+
+    template <typename T>
     typename std::enable_if_t<is_seq_container<T>::value>
     Write(T &array)
     {
