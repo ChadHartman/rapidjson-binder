@@ -137,6 +137,22 @@ TEST_CASE("Writer Tests", "[writer_tests]")
             bound::write::ToJson(foo));
     }
 
+    SECTION("Foo<Array<string>> Tests")
+    {
+        Foo<std::vector<std::string>> foo{{"alpha", "beta"}, {"gamma", "delta"}};
+        REQUIRE("{\"alpha\":[\"alpha\",\"beta\"],\"beta\":[\"gamma\",\"delta\"],\"gamma\":[\"alpha\",\"beta\"],"
+                "\"gamma_null\":null,\"delta\":[\"alpha\",\"beta\"],\"epsilon\":[\"alpha\",\"beta\"],\"zeta\":"
+                "[\"alpha\",\"beta\"]}" == bound::write::ToJson(foo));
+    }
+
+    SECTION("Foo<Array<int>> Tests")
+    {
+        Foo<std::vector<int>> foo = {{-1, 2}, {-3, 4}};
+        REQUIRE(
+            "{\"alpha\":[-1,2],\"beta\":[-3,4],\"gamma\":[-1,2],\"gamma_null\":null,\"delta\":[-1,2],\"epsilon\":[-1,2],\"zeta\":[-1,2]}" ==
+            bound::write::ToJson(foo));
+    }
+
     SECTION("Array<string> Tests")
     {
         std::vector<std::string> array = {"alpha", "beta"};
