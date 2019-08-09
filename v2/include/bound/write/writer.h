@@ -125,11 +125,11 @@ public:
 
     template <typename T>
     typename std::enable_if_t<
-        std::is_same<T, JsonString>::value ||
-        std::is_same<T, JsonDouble>::value ||
-        std::is_same<T, JsonBool>::value ||
-        std::is_same<T, JsonInt>::value ||
-        std::is_same<T, JsonUint>::value>
+        std::is_convertible<T, JsonString>::value ||
+        std::is_convertible<T, JsonDouble>::value ||
+        std::is_convertible<T, JsonBool>::value ||
+        std::is_convertible<T, JsonInt>::value ||
+        std::is_convertible<T, JsonUint>::value>
     Write(const T value)
     {
         Write(value.value);

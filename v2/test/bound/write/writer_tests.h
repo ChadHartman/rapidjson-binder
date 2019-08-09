@@ -7,17 +7,6 @@ namespace bound_write_writer_tests_h_
 {
 
 template <typename T>
-struct Bar
-{
-    T value;
-
-    operator T()
-    {
-        return value;
-    }
-};
-
-template <typename T>
 class Foo
 {
 private:
@@ -70,6 +59,17 @@ public:
         bound::property(&Foo::epsilon, "zeta"));
 };
 
+template <typename T>
+struct Bar
+{
+    T value;
+
+    operator T()
+    {
+        return value;
+    }
+};
+
 TEST_CASE("Writer Tests", "[writer_tests]")
 {
     SECTION("String Tests")
@@ -104,12 +104,55 @@ TEST_CASE("Writer Tests", "[writer_tests]")
             bound::write::ToJson(foo));
     }
 
-    // SECTION("Float Tests")
-    // {
-    //     Foo<float> foo{4.4, 5.5, NULL};
-    //     foo.eta.value = 6.6;
-    //     printf("%s\n", bound::write::ToJson(foo).c_str());
-    // }
+    SECTION("Float Tests")
+    {
+        Foo<double> foo{4.4, 5.5};
+        REQUIRE(
+            "{\"alpha\":4.4,\"beta\":5.5,\"gamma\":4.4,\"gamma_null\":null,\"delta\":4.4,\"epsilon\":4.4,\"zeta\":4.4}" ==
+            bound::write::ToJson(foo));
+    }
+
+    SECTION("JsonRaw Tests")
+    {
+        Bar<bound::JsonRaw> bar;
+        bar.value.value = "{\"dynamic-key\":true}";
+        REQUIRE(bar.value.value == bound::write::ToJson(bar));
+    }
+
+    SECTION("JsonString Tests")
+    {
+        Bar<bound::JsonString> bar;
+        bar.value.value = "Some string value with \"quotes\", and \"{\"";
+        REQUIRE("\"Some string value with \\\"quotes\\\", and \\\"{\\\"\"" == bound::write::ToJson(bar));
+    }
+
+    SECTION("JsonDouble Tests")
+    {
+        Bar<bound::JsonDouble> bar;
+        bar.value.value = 33.33;
+        REQUIRE("33.33" == bound::write::ToJson(bar));
+    }
+
+    SECTION("JsonBool Tests")
+    {
+        Bar<bound::JsonBool> bar;
+        bar.value.value = true;
+        REQUIRE("true" == bound::write::ToJson(bar));
+    }
+
+    SECTION("JsonInt Tests")
+    {
+        Bar<bound::JsonInt> bar;
+        bar.value.value = -1000;
+        REQUIRE("-1000" == bound::write::ToJson(bar));
+    }
+
+    SECTION("JsonUint Tests")
+    {
+        Bar<bound::JsonUint> bar;
+        bar.value.value = 255;
+        REQUIRE("255" == bound::write::ToJson(bar));
+    }
 }
 
 } // namespace bound_write_writer_tests_h_
