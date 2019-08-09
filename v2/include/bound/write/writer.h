@@ -20,6 +20,7 @@
 
 #include "../property_iterator.h"
 #include "../type_traits.h"
+#include "../types.h"
 #include "getter.h"
 
 namespace bound
@@ -81,22 +82,30 @@ public:
         }
     }
 
-    void Write(const bool value)
+    template <typename T>
+    typename std::enable_if_t<std::is_same<T, bool>::value>
+    Write(const T value)
     {
         writer_.Bool(value);
     }
 
-    void Write(const int64_t value)
+    template <typename T>
+    typename std::enable_if_t<is_int<T>::value>
+    Write(const T value)
     {
         writer_.Int64(value);
     }
 
-    void Write(const uint16_t value)
+    template <typename T>
+    typename std::enable_if_t<is_uint<T>::value>
+    Write(const T value)
     {
         writer_.Uint64(value);
     }
 
-    void Write(const double value)
+    template <typename T>
+    typename std::enable_if_t<std::is_floating_point<T>::value>
+    Write(const T value)
     {
         writer_.Double(value);
     }
@@ -104,6 +113,26 @@ public:
     void Write(const std::string &value)
     {
         writer_.String(value.c_str());
+    }
+
+    void Write(JsonRaw value)
+    {
+        writer_.RawValue(
+            value.value.c_str(),
+            value.value.length(),
+            rapidjson::kStringType);
+    }
+
+    template <typename T>
+    typename std::enable_if_t<
+        std::is_same<T, JsonString>::value ||
+        std::is_same<T, JsonDouble>::value ||
+        std::is_same<T, JsonBool>::value ||
+        std::is_same<T, JsonInt>::value ||
+        std::is_same<T, JsonUint>::value>
+    Write(const T value)
+    {
+        Write(value.value);
     }
 };
 

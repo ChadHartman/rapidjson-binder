@@ -34,12 +34,27 @@ struct is_seq_container : std::false_type
 template <template <typename...> class Container, typename T>
 struct is_seq_container<Container<T>>
 {
-    enum
-    {
-        value = std::is_same<Container<T>, std::vector<T>>::value ||
-                std::is_same<Container<T>, std::deque<T>>::value ||
-                std::is_same<Container<T>, std::list<T>>::value
-    };
+    constexpr static bool value =
+        std::is_same<Container<T>, std::vector<T>>::value ||
+        std::is_same<Container<T>, std::deque<T>>::value ||
+        std::is_same<Container<T>, std::list<T>>::value;
+};
+
+template <typename T>
+struct is_int
+{
+    constexpr static bool value =
+        std::is_integral<T>::value &&
+        std::is_signed<T>::value;
+};
+
+template <typename T>
+struct is_uint
+{
+    constexpr static bool value =
+        std::is_integral<T>::value &&
+        std::is_unsigned<T>::value &&
+        !std::is_same<T, bool>::value;
 };
 
 template <typename T>

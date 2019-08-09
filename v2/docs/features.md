@@ -21,7 +21,7 @@ struct Parent {
 
 ## RawJson
 
-Uses `bound::RawJson`
+Uses `bound::JsonRaw`
 
 ### From Parent
 
