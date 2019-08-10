@@ -69,8 +69,8 @@ struct Parent {
 ```
 struct Child {
 
-    operator std::string() {
-        return "";
+    operator bound::JsonString() {
+        return bound::JsonString{"value"};
     }
 
 };

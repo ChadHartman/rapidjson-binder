@@ -22,6 +22,7 @@
 #include "../type_traits.h"
 #include "../types.h"
 #include "getter.h"
+#include "../write_config.h"
 
 namespace bound
 {
@@ -169,7 +170,7 @@ public:
 };
 
 template <typename T>
-std::string ToJson(T &instance)
+std::string ToJson(T &instance, const WriteConfig &&write_config)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -178,7 +179,7 @@ std::string ToJson(T &instance)
 }
 
 template <typename T>
-bool ToJsonFile(T &instance, const std::string &&filename)
+bool ToJsonFile(T &instance, const std::string &&filename, const WriteConfig &&write_config)
 {
     FILE *fp = fopen(filename.c_str(), BOUND_BOUND_H_WRITE_MODE);
     if (fp)
