@@ -22,10 +22,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_WRITE_CONFIG_H_
 #define BOUND_WRITE_CONFIG_H_
 
-//#define BOUND_WRITE_CONFIG_H_DEBUG
-
 #include <string>
 #include <cmath>
+
+#include "rapidjson/writer.h"
 
 #include "property.h"
 #include "type_traits.h"
@@ -57,6 +57,7 @@ private:
     PropertyFilter<double> float_filter_{false, 0.0};
     PropertyFilter<std::string> string_filter_{false, ""};
 
+    int max_dec_places_ = 324; // rapidjson default
     bool filter_null_pointers_ = false;
     bool filter_empty_arrays_ = false;
     bool filter_empty_objects_ = false;
@@ -108,6 +109,17 @@ public:
     bool IsFiltered(std::string value) const
     {
         return string_filter_.enabled && string_filter_.value == value;
+    }
+
+    int GetMaxDecimalPlaces() const
+    {
+        return max_dec_places_;
+    }
+
+    WriteConfig &SetMaxDecimalPlaces(int max_dec_places)
+    {
+        max_dec_places_ = max_dec_places;
+        return *this;
     }
 
     WriteConfig &Filter(bool value)

@@ -174,6 +174,7 @@ std::string ToJson(T &instance, const WriteConfig &&write_config)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
     Writer<rapidjson::StringBuffer>(writer).Write(instance);
     return buffer.GetString();
 }
@@ -187,6 +188,7 @@ bool ToJsonFile(T &instance, const std::string &&filename, const WriteConfig &&w
         char write_buffer[BOUND_FILE_WRITE_BUFFER_SIZE];
         rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
         rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
+        writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
         Writer<rapidjson::FileWriteStream>(writer).Write(instance);
         fclose(fp);
         return true;
