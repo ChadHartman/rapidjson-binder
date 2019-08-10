@@ -34,6 +34,22 @@ class Writer
 {
     rapidjson::Writer<Stream> &writer_;
 
+    template <typename T>
+    void WriteMapContents(std::map<std::string, T> &object)
+    {
+        for (auto &i : object)
+        {
+            writer_.Key(i.first.c_str());
+            Write(i.second);
+        }
+    }
+
+    template <typename T>
+    void WriteMapContents(T &object)
+    {
+        // Exists only for compilation
+    }
+
 public:
     Writer(rapidjson::Writer<Stream> &writer)
         : writer_{writer} {}
@@ -45,9 +61,16 @@ public:
         writer_.StartObject();
 
         ListProperties(object, [&](auto property) {
-            writer_.Key(property.name);
             Get(object, property.member, [&](auto &value) {
-                Write(value);
+                if (property.render_name)
+                {
+                    writer_.Key(property.name);
+                    Write(value);
+                }
+                else
+                {
+                    WriteMapContents(value);
+                }
             });
         });
 
@@ -57,14 +80,9 @@ public:
     template <typename T>
     void Write(std::map<std::string, T> &object)
     {
+
         writer_.StartObject();
-
-        for (auto &i : object)
-        {
-            writer_.Key(i.first.c_str());
-            Write(i.second);
-        }
-
+        WriteMapContents(object);
         writer_.EndObject();
     }
 

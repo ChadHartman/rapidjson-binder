@@ -90,6 +90,14 @@ struct ConstChild
         bound::property(&ConstChild::value, "value"));
 };
 
+struct DynamicChild
+{
+    bound::JsonProperties<Child<std::string>> props{{{"dynamic", {"Hello, World!"}}}};
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&DynamicChild::props));
+};
+
 TEST_CASE("Writer Tests", "[writer_tests]")
 {
     SECTION("String Tests")
@@ -200,6 +208,12 @@ TEST_CASE("Writer Tests", "[writer_tests]")
     {
         std::map<std::string, int> map{{"foo", -11}};
         REQUIRE("{\"foo\":-11}" == bound::write::ToJson(map));
+    }
+
+    SECTION("DynamicChild Tests")
+    {
+        DynamicChild child;
+        REQUIRE("{\"dynamic\":{\"value\":\"Hello, World!\"}}" == bound::write::ToJson(child));
     }
 
     SECTION("JsonRaw Tests")

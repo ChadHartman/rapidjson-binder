@@ -23,6 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_PROPERTY_H_
 
 #include <map>
+#include "types.h"
 
 namespace bound
 {
@@ -33,19 +34,27 @@ namespace bound
 template <typename Class, typename T>
 struct Property
 {
-    constexpr Property(T Class::*member, const char *name)
+    constexpr Property(T Class::*member, const char *name, bool render_name)
         : member{member},
-          name{name} {}
+          name{name},
+          render_name{render_name} {}
 
     T Class::*member;
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
+    const bool render_name;
 };
 
 template <typename Class, typename T>
 constexpr auto property(T Class::*member, const char *name)
 {
-    return Property<Class, T>{member, name};
+    return Property<Class, T>{member, name, true};
+}
+
+template <typename Class, typename T>
+constexpr auto property(JsonProperties<T> Class::*member)
+{
+    return Property<Class, JsonProperties<T>>{member, "", false};
 }
 
 } // namespace bound

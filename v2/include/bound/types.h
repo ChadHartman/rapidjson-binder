@@ -2,10 +2,13 @@
 #define BOUND_TYPES_H_
 
 #include <string>
-
+#include <map>
 
 namespace bound
 {
+
+template <typename T>
+using JsonProperties = std::map<std::string, T>;
 
 struct JsonRaw
 {
