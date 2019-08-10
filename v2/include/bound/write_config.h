@@ -21,6 +21,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef BOUND_WRITE_CONFIG_H_
 #define BOUND_WRITE_CONFIG_H_
+#define BOUND_WRITE_CONFIG_H_DEBUG
 
 #include <string>
 #include <cmath>
@@ -78,35 +79,40 @@ public:
         return filter_empty_objects_;
     }
 
-    bool IsFiltered(bool value) const
+    bool IsFiltered(const bool &value) const
     {
-        return bool_filter_.enabled && bool_filter_.value == value;
+        bool is_filtered = bool_filter_.enabled && bool_filter_.value == value;
+#ifdef BOUND_WRITE_CONFIG_H_DEBUG
+        printf("Is bool %s filtered? %s\n",
+               value ? "true" : "false",
+               is_filtered ? "true" : "false");
+#endif
+        return is_filtered;
     }
 
     template <typename T>
     typename std::enable_if<is_int<T>::value, bool>::type
-    IsFiltered(T value) const
+    IsFiltered(const T &value) const
     {
         return int_filter_.enabled && int_filter_.value == value;
     }
 
     template <typename T>
     typename std::enable_if<is_uint<T>::value, bool>::type
-    IsFiltered(T value) const
+    IsFiltered(const T &value) const
     {
         return uint_filter_.enabled && uint_filter_.value == value;
     }
 
     template <typename T>
     typename std::enable_if<std::is_floating_point<T>::value, bool>::type
-    IsFiltered(T value) const
+    IsFiltered(const T &value) const
     {
         return float_filter_.enabled &&
                fabs(value - float_filter_.value) < std::numeric_limits<T>::epsilon();
     }
 
-    template <typename T>
-    bool IsFiltered(std::string value) const
+    bool IsFiltered(const std::string &value) const
     {
         return string_filter_.enabled && string_filter_.value == value;
     }
@@ -126,6 +132,13 @@ public:
     {
         bool_filter_.enabled = true;
         bool_filter_.value = value;
+        return *this;
+    }
+
+    WriteConfig &Filter(const char *value)
+    {
+        string_filter_.enabled = true;
+        string_filter_.value = value;
         return *this;
     }
 

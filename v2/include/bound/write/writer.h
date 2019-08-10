@@ -22,6 +22,7 @@
 #include "../type_traits.h"
 #include "../types.h"
 #include "getter.h"
+#include "scanner.h"
 #include "../write_config.h"
 
 namespace bound
@@ -34,6 +35,7 @@ template <class Stream>
 class Writer
 {
     rapidjson::Writer<Stream> &writer_;
+    Scanner scanner_;
 
     template <typename T>
     void WriteMapContents(std::map<std::string, T> &object)
@@ -52,17 +54,23 @@ class Writer
     }
 
 public:
-    Writer(rapidjson::Writer<Stream> &writer)
-        : writer_{writer} {}
+    Writer(rapidjson::Writer<Stream> &writer, const WriteConfig &write_config)
+        : writer_{writer}, scanner_{write_config} {}
 
     template <typename T>
     typename std::enable_if_t<is_bound<T>::value>
     Write(T &object)
     {
+
         writer_.StartObject();
 
         ListProperties(object, [&](auto property) {
             Get(object, property.member, [&](auto &value) {
+                if (scanner_.Scan(value) == 0)
+                {
+                    return;
+                }
+
                 if (property.render_name)
                 {
                     writer_.Key(property.name);
@@ -79,11 +87,10 @@ public:
     }
 
     template <typename T>
-    void Write(std::map<std::string, T> &object)
+    void Write(std::map<std::string, T> &map)
     {
-
         writer_.StartObject();
-        WriteMapContents(object);
+        WriteMapContents(map);
         writer_.EndObject();
     }
 
@@ -95,7 +102,10 @@ public:
 
         for (auto &value : array)
         {
-            Write(value);
+            if (scanner_.Scan(value) > 0)
+            {
+                Write(value);
+            }
         }
 
         writer_.EndArray();
@@ -175,7 +185,7 @@ std::string ToJson(T &instance, const WriteConfig &&write_config)
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
-    Writer<rapidjson::StringBuffer>(writer).Write(instance);
+    Writer<rapidjson::StringBuffer>(writer, write_config).Write(instance);
     return buffer.GetString();
 }
 
@@ -189,7 +199,7 @@ bool ToJsonFile(T &instance, const std::string &&filename, const WriteConfig &&w
         rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
         rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
         writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
-        Writer<rapidjson::FileWriteStream>(writer).Write(instance);
+        Writer<rapidjson::FileWriteStream>(writer, write_config).Write(instance);
         fclose(fp);
         return true;
     }

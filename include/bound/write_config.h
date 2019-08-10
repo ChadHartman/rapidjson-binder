@@ -148,9 +148,13 @@ public:
 
     void FilterZeroNumbers()
     {
+        printf("<int>\n");
         Filter(0);
+        printf("</int>\n<uint>\n");
         Filter(0u);
+        printf("</uint>\n<double>\n");
         Filter(0.0);
+        printf("</double>\n");
     }
 
     void FilterEmptyStrings()
@@ -171,9 +175,13 @@ public:
     void FilterEmptiesAndZeroes()
     {
         FilterZeroNumbers();
+        printf("FilterEmptyArrays\n");
         FilterEmptyArrays();
+        printf("FilterEmptyObjects\n");
         FilterEmptyObjects();
+        printf("FilterEmptyStrings\n");
         FilterEmptyStrings();
+        printf("/FilterEmptyStrings\n");
     }
 
     constexpr static auto properties = std::make_tuple(
