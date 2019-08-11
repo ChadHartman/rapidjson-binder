@@ -265,6 +265,9 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         Convertible<bound::JsonRaw> convertible;
         convertible.value.value = "{\"dynamic-key\":true}";
         REQUIRE(convertible.value.value == bound::write::ToJson(convertible, bound::WriteConfig()));
+
+        std::map<std::string, bound::JsonRaw> map = {{"foo", {"true"}}, {"bar", {""}}};
+        REQUIRE("{\"foo\":true}" == bound::write::ToJson(map, bound::WriteConfig()));
     }
 
     SECTION("JsonString Tests")
