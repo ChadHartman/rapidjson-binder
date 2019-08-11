@@ -107,8 +107,8 @@ TEST_CASE("Writer Tests", "[writer_tests]")
             "{\"alpha\":\"hello\",\"beta\":\"world\",\"gamma\":\"hello\",\"gamma_null\":null,\"delta\":\"hello\",\"epsilon\":\"hello\",\"zeta\":\"hello\"}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
         REQUIRE(
-            "{\"alpha\":\"hello\",\"gamma\":\"hello\",\"gamma_null\":null,\"delta\":\"hello\",\"epsilon\":\"hello\",\"zeta\":\"hello\"}" ==
-            bound::write::ToJson(foo, bound::WriteConfig().Filter("world")));
+            "{\"alpha\":\"hello\",\"gamma\":\"hello\",\"delta\":\"hello\",\"epsilon\":\"hello\",\"zeta\":\"hello\"}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter("world").FilterNullPointers()));
     }
 
     SECTION("bool Tests")
@@ -117,6 +117,9 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":true,\"beta\":false,\"gamma\":true,\"gamma_null\":null,\"delta\":true,\"epsilon\":true,\"zeta\":true}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":true,\"gamma\":true,\"gamma_null\":null,\"delta\":true,\"epsilon\":true,\"zeta\":true}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(false)));
     }
 
     SECTION("Integer Tests")
@@ -125,14 +128,20 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":-4,\"beta\":5,\"gamma\":-4,\"gamma_null\":null,\"delta\":-4,\"epsilon\":-4,\"zeta\":-4}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":-4,\"gamma\":-4,\"gamma_null\":null,\"delta\":-4,\"epsilon\":-4,\"zeta\":-4}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(5)));
     }
 
     SECTION("Uinteger Tests")
     {
-        Foo<unsigned> foo{4, 5};
+        Foo<unsigned> foo{4u, 5u};
         REQUIRE(
             "{\"alpha\":4,\"beta\":5,\"gamma\":4,\"gamma_null\":null,\"delta\":4,\"epsilon\":4,\"zeta\":4}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":4,\"gamma\":4,\"gamma_null\":null,\"delta\":4,\"epsilon\":4,\"zeta\":4}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(5u)));
     }
 
     SECTION("Float Tests")
@@ -141,22 +150,46 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":4.4,\"beta\":5.5,\"gamma\":4.4,\"gamma_null\":null,\"delta\":4.4,\"epsilon\":4.4,\"zeta\":4.4}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":4.4,\"gamma\":4.4,\"gamma_null\":null,\"delta\":4.4,\"epsilon\":4.4,\"zeta\":4.4}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(5.5)));
     }
 
     SECTION("Child<string> Tests")
     {
         Foo<Child<std::string>> foo{{"alpha"}, {"beta"}};
         REQUIRE(
-            "{\"alpha\":{\"value\":\"alpha\"},\"beta\":{\"value\":\"beta\"},\"gamma\":{\"value\":\"alpha\"},\"gamma_null\":null,\"delta\":{\"value\":\"alpha\"},\"epsilon\":{\"value\":\"alpha\"},\"zeta\":{\"value\":\"alpha\"}}" ==
+            "{\"alpha\":{\"value\":\"alpha\"},\"beta\":{\"value\":\"beta\"},"
+            "\"gamma\":{\"value\":\"alpha\"},\"gamma_null\":null,\"delta\":{\"value\":\"alpha\"},"
+            "\"epsilon\":{\"value\":\"alpha\"},\"zeta\":{\"value\":\"alpha\"}}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":{\"value\":\"alpha\"},\"beta\":{},\"gamma\":{\"value\":\"alpha\"},"
+            "\"gamma_null\":null,\"delta\":{\"value\":\"alpha\"},\"epsilon\":{\"value\":\"alpha\"},"
+            "\"zeta\":{\"value\":\"alpha\"}}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter("beta")));
+        REQUIRE(
+            "{\"alpha\":{\"value\":\"alpha\"},\"gamma\":{\"value\":\"alpha\"},\"gamma_null\":null,"
+            "\"delta\":{\"value\":\"alpha\"},\"epsilon\":{\"value\":\"alpha\"},"
+            "\"zeta\":{\"value\":\"alpha\"}}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter("beta").FilterEmptyObjects()));
     }
 
     SECTION("Child<int> Tests")
     {
         Foo<Child<int>> foo{{-1}, {2}};
         REQUIRE(
-            "{\"alpha\":{\"value\":-1},\"beta\":{\"value\":2},\"gamma\":{\"value\":-1},\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
+            "{\"alpha\":{\"value\":-1},\"beta\":{\"value\":2},\"gamma\":{\"value\":-1},"
+            "\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":{\"value\":-1},\"beta\":{},\"gamma\":{\"value\":-1},"
+            "\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(2)));
+        REQUIRE(
+            "{\"alpha\":{\"value\":-1},\"gamma\":{\"value\":-1},"
+            "\"gamma_null\":null,\"delta\":{\"value\":-1},\"epsilon\":{\"value\":-1},\"zeta\":{\"value\":-1}}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(2).FilterEmptyObjects()));
     }
 
     SECTION("const Child<int> Tests")
@@ -179,6 +212,9 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":[-1,2],\"beta\":[-3,4],\"gamma\":[-1,2],\"gamma_null\":null,\"delta\":[-1,2],\"epsilon\":[-1,2],\"zeta\":[-1,2]}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":[-1,2],\"beta\":[-3],\"gamma\":[-1,2],\"delta\":[-1,2],\"epsilon\":[-1,2],\"zeta\":[-1,2]}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter(4).FilterNullPointers()));
     }
 
     SECTION("Array<string> Tests")
@@ -198,7 +234,12 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         Foo<std::map<std::string, std::string>> foo{{{"foo", "bar"}}, {{"alpha", "beta"}}};
         REQUIRE("{\"alpha\":{\"foo\":\"bar\"},\"beta\":{\"alpha\":\"beta\"},\"gamma\":{\"foo\":\"bar\"},"
                 "\"gamma_null\":null,\"delta\":{\"foo\":\"bar\"},\"epsilon\":{\"foo\":\"bar\"},\"zeta\":"
-                "{\"foo\":\"bar\"}}" == bound::write::ToJson(foo, bound::WriteConfig()));
+                "{\"foo\":\"bar\"}}" ==
+                bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE("{\"alpha\":{\"foo\":\"bar\"},\"beta\":{},\"gamma\":{\"foo\":\"bar\"},"
+                "\"gamma_null\":null,\"delta\":{\"foo\":\"bar\"},\"epsilon\":{\"foo\":\"bar\"},\"zeta\":"
+                "{\"foo\":\"bar\"}}" ==
+                bound::write::ToJson(foo, bound::WriteConfig().Filter("beta")));
     }
 
     SECTION("Map<string> Tests")

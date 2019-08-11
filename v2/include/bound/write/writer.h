@@ -42,6 +42,10 @@ class Writer
     {
         for (auto &i : object)
         {
+            if (scanner_.Scan(i.second) == 0)
+            {
+                continue;
+            }
             writer_.Key(i.first.c_str());
             Write(i.second);
         }
