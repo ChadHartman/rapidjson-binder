@@ -106,6 +106,9 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE(
             "{\"alpha\":\"hello\",\"beta\":\"world\",\"gamma\":\"hello\",\"gamma_null\":null,\"delta\":\"hello\",\"epsilon\":\"hello\",\"zeta\":\"hello\"}" ==
             bound::write::ToJson(foo, bound::WriteConfig()));
+        REQUIRE(
+            "{\"alpha\":\"hello\",\"gamma\":\"hello\",\"gamma_null\":null,\"delta\":\"hello\",\"epsilon\":\"hello\",\"zeta\":\"hello\"}" ==
+            bound::write::ToJson(foo, bound::WriteConfig().Filter("world")));
     }
 
     SECTION("bool Tests")

@@ -77,14 +77,11 @@ TEST_CASE("Scan Simple Properties", "[scanner]")
     {
         // Confirm still referenced
         config.Filter(false);
-        printf("<FilterEmptiesAndZeroes>\n");
         config.FilterEmptiesAndZeroes();
-        printf("</FilterEmptiesAndZeroes>\n");
 
         REQUIRE(0 == scanner.Scan(0));
         REQUIRE(0 == scanner.Scan(0u));
         REQUIRE(0 == scanner.Scan(0.0));
-        printf("%s\n", bound::write::ToJson(config, bound::WriteConfig()).c_str());
         REQUIRE(0 == scanner.Scan(false));
         REQUIRE(0 == scanner.Scan(""));
     }

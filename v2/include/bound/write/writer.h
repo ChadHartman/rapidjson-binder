@@ -180,13 +180,19 @@ public:
 };
 
 template <typename T>
-std::string ToJson(T &instance, const WriteConfig &&write_config)
+std::string ToJson(T &instance, const WriteConfig &write_config)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
     Writer<rapidjson::StringBuffer>(writer, write_config).Write(instance);
     return buffer.GetString();
+}
+
+template <typename T>
+inline std::string ToJson(T &instance, const WriteConfig &&write_config)
+{
+    return ToJson(instance, write_config);
 }
 
 template <typename T>
