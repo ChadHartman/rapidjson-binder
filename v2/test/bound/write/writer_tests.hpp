@@ -276,6 +276,30 @@ TEST_CASE("Writer Tests", "[writer_tests]")
         REQUIRE("\"Some string value with \\\"quotes\\\", and \\\"{\\\"\"" == bound::write::ToJson(convertible, bound::WriteConfig()));
     }
 
+    SECTION("Child<JsonString> Tests")
+    {
+        Child<bound::JsonString> child{{"alpha"}};
+        REQUIRE("{\"value\":\"alpha\"}" == bound::write::ToJson(child, bound::WriteConfig()));
+        child.value.render = false;
+        REQUIRE("{}" == bound::write::ToJson(child, bound::WriteConfig()));
+    }
+
+    SECTION("Map<std::string, JsonString> Tests")
+    {
+        std::map<std::string, bound::JsonString> map{{"value", {"alpha"}}};
+        REQUIRE("{\"value\":\"alpha\"}" == bound::write::ToJson(map, bound::WriteConfig()));
+        map["value"].render = false;
+        REQUIRE("{}" == bound::write::ToJson(map, bound::WriteConfig()));
+    }
+
+    SECTION("Array<JsonString> Tests")
+    {
+        std::vector<bound::JsonString> array{{"alpha"}};
+        REQUIRE("[\"alpha\"]" == bound::write::ToJson(array, bound::WriteConfig()));
+        array[0].render = false;
+        REQUIRE("[]" == bound::write::ToJson(array, bound::WriteConfig()));
+    }
+
     SECTION("JsonDouble Tests")
     {
         Convertible<bound::JsonDouble> convertible;

@@ -108,15 +108,16 @@ public:
     }
 
     template <typename T>
-    typename std::enable_if_t<
+    typename std::enable_if<
         std::is_convertible<T, JsonString>::value ||
-        std::is_convertible<T, JsonDouble>::value ||
-        std::is_convertible<T, JsonBool>::value ||
-        std::is_convertible<T, JsonInt>::value ||
-        std::is_convertible<T, JsonUint>::value>
+            std::is_convertible<T, JsonDouble>::value ||
+            std::is_convertible<T, JsonBool>::value ||
+            std::is_convertible<T, JsonInt>::value ||
+            std::is_convertible<T, JsonUint>::value,
+        unsigned>::type
     Scan(const T value)
     {
-        Scan(value.value);
+        return value.render ? Scan(value.value) : 0;
     }
 };
 
