@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_READ_EVENT_H_
 
 // Enable this flag to get values set by rapidjson
-//#define BOUND_READER_EVENT_H_DEBUG
+//#define BOUND_READ_EVENT_H_DEBUG
 
 #include "rapidjson/reader.h"
 #include <string>
@@ -72,7 +72,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     // === Rapidjson Setters === //
     bool Null()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Null/>\n");
 #endif
 
@@ -83,7 +83,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Bool(bool b)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Bool value=\"%s\"/>\n", b ? "true" : "false");
 #endif
 
@@ -95,7 +95,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Int(int i)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Int value=\"%d\"/>\n", i);
 #endif
 
@@ -107,7 +107,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Uint(unsigned u)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Uint value=\"%d\"/>\n", u);
 #endif
 
@@ -119,7 +119,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Int64(int64_t i)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Int64 value=\"%lld\"/>\n", i);
 #endif
 
@@ -131,7 +131,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Uint64(uint64_t u)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Uint64 value=\"%llu\"/>\n", u);
 #endif
 
@@ -143,7 +143,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Double(double d)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Double value=\"%f\"/>\n", d);
 #endif
 
@@ -155,7 +155,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool String(const char *str, rapidjson::SizeType length, bool copy)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<String value=\"%s\"/>\n", str);
 #endif
 
@@ -167,7 +167,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool StartObject()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Object>\n");
 #endif
 
@@ -178,7 +178,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Key(const char *str, rapidjson::SizeType length, bool copy)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Key value=\"%s\"/>\n", str);
 #endif
 
@@ -190,7 +190,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool EndObject(rapidjson::SizeType memberCount)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("</Object>\n");
 #endif
 
@@ -207,7 +207,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool StartArray()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Array>\n");
 #endif
 
@@ -218,7 +218,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool EndArray(rapidjson::SizeType elementCount)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("</Array>\n");
 #endif
 

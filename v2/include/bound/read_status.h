@@ -19,67 +19,44 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_READ_PARSER_H_
-#define BOUND_READ_PARSER_H_
+#ifndef BOUND_READ_STATUS_H_
+#define BOUND_READ_STATUS_H_
 
-#include <rapidjson/reader.h>
-#include "event.h"
+#include <string>
+#include "property.h"
 
 namespace bound
 {
 
-namespace read
-{
-
-// Parser which will tokenize JSON parse events
-//  See bound.h for how to use
-template <typename Stream>
-class Parser
+// Result of a JSON Read operation
+struct ReadStatus
 {
 private:
-    Event event_;
-    rapidjson::Reader reader_;
-    Stream stream_;
-
-    bool is_reader_started_ = false;
-    bool is_reader_complete_ = false;
+    std::string error_message_;
 
 public:
-    Parser(Stream &&stream) : stream_{stream} {}
-
-    const Event &event()
+    // Whether the read was successful
+    bool success() const
     {
-        return event_;
+        return error_message_.length() == 0;
+    };
+
+    // The error message if one occurred
+    std::string error_message() const
+    {
+        return error_message_;
     }
 
-    // Returns true while there's new events
-    bool FetchNextEvent()
+    // The error message setter
+    void set_error_message(std::string error_message)
     {
-        if (!is_reader_started_)
-        {
-            reader_.IterativeParseInit();
-            is_reader_started_ = true;
-        }
-
-        if (is_reader_complete_)
-        {
-            return false;
-        }
-
-        if (reader_.IterativeParseComplete())
-        {
-            is_reader_complete_ = true;
-            event_.End();
-            return false;
-        }
-
-        reader_.IterativeParseNext<rapidjson::kParseCommentsFlag>(stream_, event_);
-
-        return true;
+        error_message_ = error_message;
     }
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        property(&ReadStatus::success, "success"),
+        property(&ReadStatus::error_message_, "error_message"));
 };
-
-} // namespace read
 
 } // namespace bound
 

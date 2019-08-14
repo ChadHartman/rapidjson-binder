@@ -23,19 +23,6 @@ void ListProperties(T &object, F &&f)
     });
 }
 
-template <typename T, typename F>
-void FindProperty(T &object, std::string &&key, F &&f)
-{
-    ListProperties(object, [&](auto prop) {
-        if (key != prop.name)
-        {
-            return;
-        }
-
-        f(prop.member);
-    });
-}
-
 } // namespace bound
 
 #endif

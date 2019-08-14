@@ -109,7 +109,7 @@ struct Child {
 
 ## Conditional Writing
 
-If an outputted property shouldn't render, have a child/parent get return a `NULL` pointer.
+Specific values can be filtered out using `bound::WriteConfig`. Alternatively each of the `bound::Json*` types possess a `bool render` field; which when set to `false`, will be skipped.
 
 ## Dynamic Key Properties
 

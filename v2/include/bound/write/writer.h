@@ -60,6 +60,10 @@ class Writer
 public:
     Writer(rapidjson::Writer<Stream> &writer, const WriteConfig &write_config)
         : writer_{writer}, scanner_{write_config} {}
+    Writer(const Writer &) = delete;
+    Writer(const Writer &&) = delete;
+    Writer &operator=(const Writer &) = delete;
+    Writer &operator=(const Writer &&) = delete;
 
     template <typename T>
     typename std::enable_if_t<is_bound<T>::value>

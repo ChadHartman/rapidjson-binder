@@ -12,29 +12,29 @@
 
 #include <string>
 
-#include "read/parser.h"
 #include "write/writer.h"
+#include "read/reader.h"
 
 namespace bound
 {
 
-template <typename T>
-void FromJson(const std::string &json, T &object)
-{
-    read::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
-}
+// template <typename T>
+// void FromJson(const std::string &json, T &object)
+// {
+//     read::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
+// }
 
-template <typename T>
-void FromJson(const std::string &&json, T &object)
-{
-    return FromJson(json, object);
-}
+// template <typename T>
+// void FromJson(const std::string &&json, T &object)
+// {
+//     return FromJson(json, object);
+// }
 
-template <typename T>
-std::string ToJson(T &object)
-{
-    return write::ToJson(object);
-}
+// template <typename T>
+// std::string ToJson(T &object)
+// {
+//     return write::ToJson(object);
+// }
 
 } // namespace bound
 
