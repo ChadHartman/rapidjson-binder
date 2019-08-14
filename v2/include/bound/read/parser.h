@@ -77,6 +77,22 @@ public:
 
         return true;
     }
+
+    void Skip()
+    {
+        const Event::Type end_type = event_.type == Event::kTypeStartObject ? Event::kTypeEndObject : Event::kTypeEndArray;
+
+        while (FetchNextEvent() && event_.type != end_type)
+        {
+            switch (event_.type)
+            {
+            case Event::kTypeStartObject:
+            case Event::kTypeStartArray:
+                Skip();
+                break;
+            }
+        }
+    }
 };
 
 } // namespace read

@@ -4,30 +4,41 @@
 #include "parser.h"
 #include "../read_status.h"
 #include "assign.h"
-
+#include "read_target.h"
 namespace bound
 {
 
 namespace read
 {
 
-template <typename T>
-struct target
-{
-    using type = T;
-};
-
-template <typename T, typename Class>
-struct target<void (Class::*)(T)>
-{
-    using type = T;
-};
-
 template <typename T, typename Stream>
 class Reader
 {
 private:
     Parser<Stream> &parser_;
+
+    void Prime()
+    {
+        if (parser_.event().type == Event::kTypeBegin)
+        {
+            parser_.FetchNextEvent();
+        }
+    }
+
+    template <typename V>
+    typename std::enable_if<is_bound<V>::value, V>::type
+    GetValue(ReadStatus &read_status)
+    {
+        return Reader<V, Stream>{parser_}.Read(read_status);
+    }
+
+    template <typename V>
+    typename std::enable_if<!is_bound<V>::value, V>::type
+    GetValue(ReadStatus &read_status)
+    {
+        V value;
+        return value;
+    }
 
 public:
     Reader(Parser<Stream> &parser)
@@ -41,6 +52,8 @@ public:
     {
         T instance;
         std::string key;
+
+        Prime();
 
         while (read_status.success() && parser_.FetchNextEvent())
         {
@@ -115,15 +128,19 @@ public:
                         return;
                     }
 
+                    if (!ReadTarget<decltype(property.member)>::is_assignable)
+                    {
+                        return;
+                    }
+
                     found = true;
-                    using Type = typename target<decltype(property.member)>::type;
-                    Type value = Reader<Type, Stream>{parser_}.Read(read_status);
-                    SetValue(instance, key, value);
+                    using Type = typename ReadTarget<decltype(property.member)>::type;
+                    SetValue(instance, key, GetValue<Type>(read_status), read_status);
                 });
 
                 if (!found)
                 {
-                    // TODO: Skip
+                    parser_.Skip();
                 }
 
                 last_token_was_key_ = false;

@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_READ_EVENT_H_
 
 // Enable this flag to get values set by rapidjson
-//#define BOUND_READ_EVENT_H_DEBUG
+#define BOUND_READ_EVENT_H_DEBUG
 
 #include "rapidjson/reader.h"
 #include <string>
