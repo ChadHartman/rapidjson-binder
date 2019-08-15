@@ -12,157 +12,149 @@ namespace read
 {
 
 template <typename T, typename Stream>
-class Reader
+struct ReadContext
 {
-private:
-    Parser<Stream> &parser_;
+    T instance;
+    Parser<Stream> &parser;
+    ReadStatus &read_status;
 
-    void Prime()
-    {
-        if (parser_.event().type == Event::kTypeBegin)
+    ReadContext(Parser<Stream> &parser, ReadStatus &read_status)
+        : parser{parser}, read_status{read_status} {}
+};
+
+template <typename T, typename Stream>
+typename std::enable_if<is_bound<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx);
+
+template <typename T, typename Stream>
+typename std::enable_if<!is_bound<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx);
+
+template <typename T, typename Stream>
+typename std::enable_if_t<is_bound<T>::value>
+ReadComplex(ReadContext<T, Stream> &ctx, std::string &key)
+{
+    ListProperties(ctx.instance, [&](auto &property) {
+        if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
         {
-            parser_.FetchNextEvent();
+            return;
         }
+
+        using Type = typename ReadTarget<decltype(property.member)>::type;
+        ReadContext<Type, Stream> child_ctx{ctx.parser, ctx.read_status};
+        Type value = Read<Type>(child_ctx);
+        SetValue(ctx.instance, key, value, ctx.read_status);
+    });
+}
+
+template <typename T, typename Stream>
+typename std::enable_if_t<!is_bound<T>::value>
+ReadComplex(ReadContext<T, Stream> &ctx, std::string &key)
+{
+    // Needed for compilation
+}
+
+template <typename T, typename Stream>
+typename std::enable_if<is_bound<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx)
+{
+    std::string key;
+    bool last_token_was_key = false;
+
+    if (ctx.parser.event().type == Event::kTypeBegin)
+    {
+        ctx.parser.FetchNextEvent();
     }
 
-    template <typename V>
-    typename std::enable_if<is_bound<V>::value, V>::type
-    GetValue(ReadStatus &read_status)
+    while (ctx.read_status.success() && ctx.parser.FetchNextEvent())
     {
-        return Reader<V, Stream>{parser_}.Read(read_status);
-    }
-
-    template <typename V>
-    typename std::enable_if<!is_bound<V>::value, V>::type
-    GetValue(ReadStatus &read_status)
-    {
-        V value;
-        return value;
-    }
-
-public:
-    Reader(Parser<Stream> &parser)
-        : parser_{parser} {}
-    Reader(const Reader &) = delete;
-    Reader(const Reader &&) = delete;
-    Reader &operator=(const Reader &) = delete;
-    Reader &operator=(const Reader &&) = delete;
-
-    T Read(ReadStatus &read_status)
-    {
-        T instance;
-        std::string key;
-
-        Prime();
-
-        while (read_status.success() && parser_.FetchNextEvent())
+        switch (ctx.parser.event().type)
         {
-            bool last_token_was_key_ = false;
+        case Event::kTypeBegin:
+            break;
 
-            switch (parser_.event().type)
+        case Event::kTypeNull:
+            last_token_was_key = false;
+            SetValue(ctx.instance, key, nullptr, ctx.read_status);
+            break;
+
+        case Event::kTypeBool:
+            SetValue(ctx.instance, key, ctx.parser.event().value.bool_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeInt:
+            SetValue(ctx.instance, key, ctx.parser.event().value.int_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeUint:
+            SetValue(ctx.instance, key, ctx.parser.event().value.unsigned_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeInt64:
+            SetValue(ctx.instance, key, ctx.parser.event().value.int64_t_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeUint64:
+            SetValue(ctx.instance, key, ctx.parser.event().value.uint64_t_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeDouble:
+            SetValue(ctx.instance, key, ctx.parser.event().value.double_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeString:
+            SetValue(ctx.instance, key, ctx.parser.event().string_value, ctx.read_status);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeKey:
+            if (last_token_was_key)
             {
-            case Event::kTypeBegin:
-                break;
-
-            case Event::kTypeNull:
-                last_token_was_key_ = false;
-                SetValue(instance, key, nullptr, read_status);
-                break;
-
-            case Event::kTypeBool:
-                SetValue(instance, key, parser_.event().value.bool_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeInt:
-                SetValue(instance, key, parser_.event().value.int_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeUint:
-                SetValue(instance, key, parser_.event().value.unsigned_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeInt64:
-                SetValue(instance, key, parser_.event().value.int64_t_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeUint64:
-                SetValue(instance, key, parser_.event().value.uint64_t_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeDouble:
-                SetValue(instance, key, parser_.event().value.double_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeString:
-                SetValue(instance, key, parser_.event().string_value, read_status);
-                last_token_was_key_ = false;
-                break;
-
-            case Event::kTypeKey:
-                if (last_token_was_key_)
-                {
-                    read_status.set_error_message("Unassigned key: \"" + key + "\"; found new key: " + parser_.event().ToString());
-                    return instance;
-                }
-                else
-                {
-                    last_token_was_key_ = true;
-                    key = parser_.event().string_value;
-                }
-                break;
-
-            case Event::kTypeStartObject:
-            case Event::kTypeStartArray:
+                ctx.read_status.set_error_message("Unassigned key: \"" + key + "\"; found new key: " + ctx.parser.event().ToString());
+                return ctx.instance;
+            }
+            else
             {
-                bool found = false;
-
-                ListProperties(instance, [&](auto property) {
-                    if (property.name != key)
-                    {
-                        return;
-                    }
-
-                    if (!ReadTarget<decltype(property.member)>::is_assignable)
-                    {
-                        return;
-                    }
-
-                    found = true;
-                    using Type = typename ReadTarget<decltype(property.member)>::type;
-                    SetValue(instance, key, GetValue<Type>(read_status), read_status);
-                });
-
-                if (!found)
-                {
-                    parser_.Skip();
-                }
-
-                last_token_was_key_ = false;
+                last_token_was_key = true;
+                key = ctx.parser.event().string_value;
             }
             break;
 
-            case Event::kTypeEndArray:
-            case Event::kTypeEndObject:
-            case Event::kTypeEnd:
-                return instance;
-            }
+        case Event::kTypeStartObject:
+        case Event::kTypeStartArray:
+            ReadComplex(ctx, key);
+            last_token_was_key = false;
+            break;
+
+        case Event::kTypeEndArray:
+        case Event::kTypeEndObject:
+        case Event::kTypeEnd:
+            return ctx.instance;
         }
-        return instance;
     }
-};
+    return ctx.instance;
+}
+
+template <typename T, typename Stream>
+typename std::enable_if<!is_bound<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx)
+{
+    return ctx.instance;
+}
 
 template <typename T>
 T FromJson(std::string &&json)
 {
     Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
     ReadStatus read_status;
-    return Reader<T, rapidjson::StringStream>{parser}.Read(read_status);
+    ReadContext<T, rapidjson::StringStream> ctx{parser, read_status};
+    return Read<T>(ctx);
 }
 
 } // namespace read

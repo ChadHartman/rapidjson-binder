@@ -39,7 +39,6 @@ struct ReadTarget<void (Class::*)(T)>
     const static bool is_assignable = true;
 };
 
-
 } // namespace read
 
 } // namespace bound
