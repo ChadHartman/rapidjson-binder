@@ -2,6 +2,7 @@
 #define BOUND_READ_ASSIGN_H_
 
 #include "../read_status.h"
+#include "../type_traits.h"
 
 namespace bound
 {
@@ -63,6 +64,27 @@ Assign(A &a, B &b, ReadStatus &status)
     status.set_error_message(error_message);
 }
 
+template <typename T, typename M, typename V>
+typename std::enable_if_t<std::is_member_object_pointer<M>::value>
+Set(T &instance, M property, V &value, ReadStatus &status)
+{
+    Assign(instance.*(property), value, status);
+}
+
+template <typename T, typename M, typename V>
+typename std::enable_if_t<is_setter<M>::value>
+Set(T &instance, M property, V &value, ReadStatus &status)
+{
+}
+
+template <typename T, typename M, typename V>
+typename std::enable_if_t<
+    !is_setter<M>::value &&
+    !std::is_member_object_pointer<M>::value>
+Set(T &instance, M property, V &value, ReadStatus &status)
+{
+}
+
 template <typename T, typename V>
 void SetValue(T &instance, std::string &key, V &value, ReadStatus &read_status)
 {
@@ -75,6 +97,8 @@ void SetValue(T &instance, std::string &key, V &value, ReadStatus &read_status)
         }
 
         found = true;
+
+        Set(instance, property.member, value, read_status);
     });
 }
 

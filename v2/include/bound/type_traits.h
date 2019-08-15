@@ -72,6 +72,16 @@ struct is_getter<T (Class::*)() const> : std::true_type
 {
 };
 
+template <typename T>
+struct is_setter : std::false_type
+{
+};
+
+template <typename T, typename Class>
+struct is_setter<void (Class::*)(T)> : std::true_type
+{
+};
+
 } // namespace bound
 
 #endif
