@@ -82,6 +82,17 @@ struct is_setter<void (Class::*)(T)> : std::true_type
 {
 };
 
+template <typename T>
+struct setter_arg
+{
+};
+
+template <typename T, typename Class>
+struct setter_arg<void (Class::*)(T)>
+{
+    using type = T;
+};
+
 } // namespace bound
 
 #endif

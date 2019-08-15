@@ -75,6 +75,9 @@ template <typename T, typename M, typename V>
 typename std::enable_if_t<is_setter<M>::value>
 Set(T &instance, M property, V &value, ReadStatus &status)
 {
+    typename setter_arg<M>::type destination;
+    Assign(destination, value, status);
+    (instance.*(property))(destination);
 }
 
 template <typename T, typename M, typename V>
