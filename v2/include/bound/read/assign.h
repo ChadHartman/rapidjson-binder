@@ -64,53 +64,6 @@ Assign(A &a, B &b, ReadStatus &status)
     status.set_error_message(error_message);
 }
 
-template <typename T, typename M, typename V>
-typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-Set(T &instance, M property, V &value, ReadStatus &status)
-{
-    Assign(instance.*(property), value, status);
-}
-
-template <typename T, typename M, typename V>
-typename std::enable_if_t<is_setter<M>::value>
-Set(T &instance, M property, V &value, ReadStatus &status)
-{
-    typename setter_arg<M>::type destination;
-    Assign(destination, value, status);
-    (instance.*(property))(destination);
-}
-
-template <typename T, typename M, typename V>
-typename std::enable_if_t<
-    !is_setter<M>::value &&
-    !std::is_member_object_pointer<M>::value>
-Set(T &instance, M property, V &value, ReadStatus &status)
-{
-}
-
-template <typename T, typename V>
-void SetValue(T &instance, std::string &key, V &value, ReadStatus &read_status)
-{
-    bool found = false;
-
-    ListProperties(instance, [&](auto &property) {
-        if (key != property.name)
-        {
-            return;
-        }
-
-        found = true;
-
-        Set(instance, property.member, value, read_status);
-    });
-}
-
-template <typename T, typename V>
-void SetValue(T &instance, std::string &key, V &&value, ReadStatus &read_status)
-{
-    SetValue(instance, key, value, read_status);
-}
-
 } // namespace read
 
 } // namespace bound

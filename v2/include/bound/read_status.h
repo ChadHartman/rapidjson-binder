@@ -48,7 +48,13 @@ public:
     }
 
     // The error message setter
-    void set_error_message(std::string error_message)
+    void set_error_message(std::string &error_message)
+    {
+        error_message_ = error_message;
+    }
+
+    // The error message setter
+    void set_error_message(std::string &&error_message)
     {
         error_message_ = error_message;
     }

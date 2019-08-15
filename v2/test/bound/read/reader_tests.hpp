@@ -21,6 +21,7 @@ private:
 
 public:
     Info info;
+    std::vector<std::string> aliases;
 
     void set_locked(bool value)
     {
@@ -34,13 +35,20 @@ public:
 
     constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&User::info, "info"),
+        bound::property(&User::aliases, "aliases"),
         bound::property(&User::locked, "locked"),
         bound::property(&User::set_locked, "locked"));
 };
 
 TEST_CASE("Reader Tests", "[reader_tests]")
 {
-    User user = bound::read::FromJson<User>("{\"info\":{\"name\":\"alpha\"},\"locked\":false}");
+    User user = bound::read::FromJson<User>(
+        "{\"info\":{\"name\":\"alpha\"},"
+        "\"aliases\":[\"beta\",\"gamma\"],"
+        "\"locked\":false}");
+
+    printf("%s\n", bound::write::ToJson(user, bound::WriteConfig()).c_str());
+
     REQUIRE(user.info.name == "alpha");
     REQUIRE(user.locked() == false);
 
