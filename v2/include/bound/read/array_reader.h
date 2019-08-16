@@ -13,7 +13,7 @@ namespace read
 {
 
 template <template <typename...> class Container, typename Stream, typename T, typename V>
-void Add(ReadContext<Container<T>, Stream> &ctx, V &item)
+void Add(ReadContext<Container<T>, Stream> &ctx, V &&item)
 {
     T child;
     Assign(child, item, ctx.read_status);
@@ -23,10 +23,11 @@ void Add(ReadContext<Container<T>, Stream> &ctx, V &item)
     }
 }
 
-template <template <typename...> class Container, typename T, typename Stream>
-typename std::enable_if<is_seq_container<Container<T>>::value, T>::type
-Read(ReadContext<Container<T>, Stream> &ctx)
+template <typename T, typename Stream>
+typename std::enable_if<is_seq_container<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx)
 {
+    printf("<Read type=\"array\">\n");
     if (ctx.parser.event().type == Event::kTypeBegin)
     {
         ctx.parser.FetchNextEvent();
@@ -39,48 +40,25 @@ Read(ReadContext<Container<T>, Stream> &ctx)
         case Event::kTypeBegin:
             break;
 
-        case Event::kTypeNull:
-            Add(ctx, nullptr);
-            break;
-
-        case Event::kTypeBool:
-            Add(ctx, ctx.parser.event().value.bool_value);
-            break;
-
-        case Event::kTypeInt:
-            Add(ctx, ctx.parser.event().value.int_value);
-            break;
-
-        case Event::kTypeUint:
-            Add(ctx, ctx.parser.event().value.unsigned_value);
-            break;
-
-        case Event::kTypeInt64:
-            Add(ctx, ctx.parser.event().value.int64_t_value);
-            break;
-
-        case Event::kTypeUint64:
-            Add(ctx, ctx.parser.event().value.uint64_t_value);
-            break;
-
-        case Event::kTypeDouble:
-            Add(ctx, ctx.parser.event().value.double_value);
-            break;
-
-        case Event::kTypeString:
-            Add(ctx, ctx.parser.event().string_value);
-            break;
-
         case Event::kTypeKey:
         case Event::kTypeEndObject:
             ctx.read_status.set_error_message("Unexpected event=" + ctx.parser.event().ToString());
             return ctx.instance;
 
+        case Event::kTypeNull:
+        case Event::kTypeBool:
+        case Event::kTypeInt:
+        case Event::kTypeUint:
+        case Event::kTypeInt64:
+        case Event::kTypeUint64:
+        case Event::kTypeDouble:
+        case Event::kTypeString:
         case Event::kTypeStartObject:
         case Event::kTypeStartArray:
         {
-            ReadContext<T, Stream> child_ctx{ctx.parser, ctx.read_status};
-            Add(ctx, Read<T>(child_ctx));
+            printf("<Adding element/>\n");
+            ReadContext<typename T::value_type, Stream> child_ctx{ctx.parser, ctx.read_status};
+            Add(ctx, Read<typename T::value_type>(child_ctx));
         }
         break;
 
@@ -91,6 +69,7 @@ Read(ReadContext<Container<T>, Stream> &ctx)
     }
 
     ctx.read_status.set_error_message("Reached unexpected point.");
+    printf("</Read type=\"array\">\n");
 
     return ctx.instance;
 }

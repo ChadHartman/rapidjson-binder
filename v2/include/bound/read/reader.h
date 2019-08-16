@@ -25,13 +25,49 @@ template <typename T, typename Stream>
 typename std::enable_if<is_bound<T>::value, T>::type
 Read(ReadContext<T, Stream> &ctx);
 
-template <template <typename...> class Container, typename T, typename Stream>
-Container<T> Read(ReadContext<Container<T>, Stream> &ctx);
+template <typename T, typename Stream>
+typename std::enable_if<is_seq_container<T>::value, T>::type
+Read(ReadContext<T, Stream> &ctx);
 
 template <typename T, typename Stream>
-typename std::enable_if<!is_bound<T>::value, T>::type
+typename std::enable_if<
+    !is_bound<T>::value && !is_seq_container<T>::value,
+    T>::type
 Read(ReadContext<T, Stream> &ctx)
 {
+    printf("Shallow Read\n");
+
+    switch (ctx.parser.event().type)
+    {
+    case Event::kTypeNull:
+        Assign(ctx.instance, nullptr, ctx.read_status);
+        break;
+    case Event::kTypeBool:
+        Assign(ctx.instance, ctx.parser.event().value.bool_value, ctx.read_status);
+        break;
+    case Event::kTypeInt:
+        Assign(ctx.instance, ctx.parser.event().value.int_value, ctx.read_status);
+        break;
+    case Event::kTypeUint:
+        Assign(ctx.instance, ctx.parser.event().value.unsigned_value, ctx.read_status);
+        break;
+    case Event::kTypeInt64:
+        Assign(ctx.instance, ctx.parser.event().value.int64_t_value, ctx.read_status);
+        break;
+    case Event::kTypeUint64:
+        Assign(ctx.instance, ctx.parser.event().value.uint64_t_value, ctx.read_status);
+        break;
+    case Event::kTypeDouble:
+        Assign(ctx.instance, ctx.parser.event().value.double_value, ctx.read_status);
+        break;
+    case Event::kTypeString:
+        Assign(ctx.instance, ctx.parser.event().string_value, ctx.read_status);
+        break;
+    default:
+        ctx.read_status.set_error_message("Invalid read operation=" + ctx.parser.event().ToString());
+        break;
+    }
+
     return ctx.instance;
 }
 
