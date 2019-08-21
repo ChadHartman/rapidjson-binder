@@ -105,7 +105,7 @@ public:
                 if (last_token_was_key)
                 {
                     read_status_.set_error_message("Unassigned key: \"" + key + "\"; found new key: " + parser_.event().ToString());
-                    return;
+                    break;
                 }
 
                 last_token_was_key = true;
@@ -113,12 +113,12 @@ public:
             }
             else if (event_type == Event::kTypeEndObject)
             {
-                return;
+                break;
             }
             else
             {
                 read_status_.set_error_message("Unexpected token=" + parser_.event().ToString());
-                return;
+                break;
             }
         }
     }
@@ -127,39 +127,28 @@ public:
     typename std::enable_if_t<is_seq_container<T>::value>
     Read(T &instance)
     {
+        Event::Type event_type;
+
         Prime();
 
         while (read_status_.success() && parser_.FetchNextEvent())
         {
-            switch (parser_.event().type)
-            {
-            case Event::kTypeNull:
-            case Event::kTypeBool:
-            case Event::kTypeInt:
-            case Event::kTypeUint:
-            case Event::kTypeInt64:
-            case Event::kTypeUint64:
-            case Event::kTypeDouble:
-            case Event::kTypeString:
-            case Event::kTypeStartObject:
-            case Event::kTypeStartArray:
+            event_type = parser_.event().type;
+
+            if (event_type & kEventTypeStartValue)
             {
                 typename T::value_type child;
                 Read(child);
                 instance.push_back(child);
+                continue;
             }
-            break;
-
-            case Event::kTypeEndArray:
-                return;
-
-            default:
+            else if (event_type != Event::kTypeEndArray)
+            {
                 read_status_.set_error_message("Unexpected event=" + parser_.event().ToString());
-                return;
             }
-        }
 
-        read_status_.set_error_message("Reached unexpected point.");
+            break;
+        }
     }
 
     template <typename T>
@@ -198,10 +187,8 @@ public:
             read_status_.set_error_message("Invalid read operation=" + parser_.event().ToString());
             break;
         }
-
-        return;
     }
-}; // namespace read
+};
 
 template <typename T>
 T FromJson(std::string &&json)
