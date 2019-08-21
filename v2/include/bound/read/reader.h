@@ -12,6 +12,18 @@ namespace bound
 namespace read
 {
 
+const static unsigned int kEventTypeStartValue =
+    Event::kTypeNull |
+    Event::kTypeBool |
+    Event::kTypeInt |
+    Event::kTypeUint |
+    Event::kTypeInt64 |
+    Event::kTypeUint64 |
+    Event::kTypeDouble |
+    Event::kTypeString |
+    Event::kTypeStartObject |
+    Event::kTypeStartArray;
+
 template <typename Stream>
 class Reader
 {
@@ -57,6 +69,14 @@ private:
         });
     }
 
+    void Prime()
+    {
+        if (parser_.event().type == Event::kTypeBegin)
+        {
+            parser_.FetchNextEvent();
+        }
+    }
+
 public:
     Reader(Parser<Stream> &parser, ReadStatus &read_status)
         : parser_{parser}, read_status_{read_status} {}
@@ -67,49 +87,36 @@ public:
     {
         std::string key;
         bool last_token_was_key = false;
+        Event::Type event_type;
 
-        if (parser_.event().type == Event::kTypeBegin)
-        {
-            parser_.FetchNextEvent();
-        }
+        Prime();
 
         while (read_status_.success() && parser_.FetchNextEvent())
         {
-            switch (parser_.event().type)
-            {
+            event_type = parser_.event().type;
 
-            case Event::kTypeNull:
-            case Event::kTypeBool:
-            case Event::kTypeInt:
-            case Event::kTypeUint:
-            case Event::kTypeInt64:
-            case Event::kTypeUint64:
-            case Event::kTypeDouble:
-            case Event::kTypeString:
-            case Event::kTypeStartObject:
-            case Event::kTypeStartArray:
+            if (event_type & kEventTypeStartValue)
+            {
                 FindProperty(instance, key);
                 last_token_was_key = false;
-                break;
-
-            case Event::kTypeKey:
+            }
+            else if (event_type == Event::kTypeKey)
+            {
                 if (last_token_was_key)
                 {
                     read_status_.set_error_message("Unassigned key: \"" + key + "\"; found new key: " + parser_.event().ToString());
                     return;
                 }
-                else
-                {
-                    last_token_was_key = true;
-                    key = parser_.event().string_value;
-                }
-                break;
 
-            case Event::kTypeEndObject:
-            case Event::kTypeEnd:
+                last_token_was_key = true;
+                key = parser_.event().string_value;
+            }
+            else if (event_type == Event::kTypeEndObject)
+            {
                 return;
-
-            default:
+            }
+            else
+            {
                 read_status_.set_error_message("Unexpected token=" + parser_.event().ToString());
                 return;
             }
@@ -120,23 +127,12 @@ public:
     typename std::enable_if_t<is_seq_container<T>::value>
     Read(T &instance)
     {
-        if (parser_.event().type == Event::kTypeBegin)
-        {
-            parser_.FetchNextEvent();
-        }
+        Prime();
 
         while (read_status_.success() && parser_.FetchNextEvent())
         {
             switch (parser_.event().type)
             {
-            case Event::kTypeBegin:
-                break;
-
-            case Event::kTypeKey:
-            case Event::kTypeEndObject:
-                read_status_.set_error_message("Unexpected event=" + parser_.event().ToString());
-                return;
-
             case Event::kTypeNull:
             case Event::kTypeBool:
             case Event::kTypeInt:
@@ -155,7 +151,10 @@ public:
             break;
 
             case Event::kTypeEndArray:
-            case Event::kTypeEnd:
+                return;
+
+            default:
+                read_status_.set_error_message("Unexpected event=" + parser_.event().ToString());
                 return;
             }
         }
@@ -167,6 +166,8 @@ public:
     typename std::enable_if_t<!is_bound<T>::value && !is_seq_container<T>::value>
     Read(T &instance)
     {
+        Prime();
+
         switch (parser_.event().type)
         {
         case Event::kTypeNull:
@@ -200,7 +201,7 @@ public:
 
         return;
     }
-};
+}; // namespace read
 
 template <typename T>
 T FromJson(std::string &&json)
