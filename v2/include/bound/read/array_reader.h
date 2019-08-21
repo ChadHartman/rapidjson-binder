@@ -27,7 +27,6 @@ template <typename T, typename Stream>
 typename std::enable_if<is_seq_container<T>::value, T>::type
 Read(ReadContext<T, Stream> &ctx)
 {
-    printf("<Read type=\"array\">\n");
     if (ctx.parser.event().type == Event::kTypeBegin)
     {
         ctx.parser.FetchNextEvent();
@@ -56,7 +55,6 @@ Read(ReadContext<T, Stream> &ctx)
         case Event::kTypeStartObject:
         case Event::kTypeStartArray:
         {
-            printf("<Adding element/>\n");
             ReadContext<typename T::value_type, Stream> child_ctx{ctx.parser, ctx.read_status};
             Add(ctx, Read<typename T::value_type>(child_ctx));
         }
@@ -69,7 +67,6 @@ Read(ReadContext<T, Stream> &ctx)
     }
 
     ctx.read_status.set_error_message("Reached unexpected point.");
-    printf("</Read type=\"array\">\n");
 
     return ctx.instance;
 }

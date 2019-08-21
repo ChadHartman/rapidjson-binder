@@ -15,14 +15,14 @@ namespace read
 
 template <typename T, typename Stream, typename M, typename V>
 typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-Set(ReadContext<T, Stream> &ctx, M &property, V &&value)
+Set(ReadContext<T, Stream> &ctx, M property, V &&value)
 {
     ctx.instance.*(property) = value;
 }
 
 template <typename T, typename Stream, typename M, typename V>
 typename std::enable_if_t<is_setter<M>::value>
-Set(ReadContext<T, Stream> &ctx, M &property, V &&value)
+Set(ReadContext<T, Stream> &ctx, M property, V &&value)
 {
     (ctx.instance.*(property))(value);
 }
@@ -31,7 +31,7 @@ template <typename T, typename Stream, typename M, typename V>
 typename std::enable_if_t<
     !is_setter<M>::value &&
     !std::is_member_object_pointer<M>::value>
-Set(ReadContext<T, Stream> &ctx, M &property, V &&value)
+Set(ReadContext<T, Stream> &ctx, M property, V &&value)
 {
     // Do nothing
 }
@@ -46,7 +46,6 @@ void FindProperty(ReadContext<T, Stream> &ctx, std::string &key)
         }
 
         using ChildType = typename ReadTarget<decltype(property.member)>::type;
-        printf("Reading into %s\n", typeid(ChildType).name());
         ReadContext<ChildType, Stream> child_ctx{ctx.parser, ctx.read_status};
         Set(ctx, property.member, Read<ChildType>(child_ctx));
     });
@@ -68,8 +67,6 @@ Read(ReadContext<T, Stream> &ctx)
     {
         switch (ctx.parser.event().type)
         {
-        case Event::kTypeBegin:
-            break;
 
         case Event::kTypeNull:
         case Event::kTypeBool:
@@ -98,12 +95,12 @@ Read(ReadContext<T, Stream> &ctx)
             }
             break;
 
-        case Event::kTypeEndArray:
-            ctx.read_status.set_error_message("Unexpected token=" + ctx.parser.event().ToString());
-            return ctx.instance;
-
         case Event::kTypeEndObject:
         case Event::kTypeEnd:
+            return ctx.instance;
+
+        default:
+            ctx.read_status.set_error_message("Unexpected token=" + ctx.parser.event().ToString());
             return ctx.instance;
         }
     }
