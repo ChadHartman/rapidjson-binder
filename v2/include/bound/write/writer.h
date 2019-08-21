@@ -174,14 +174,27 @@ public:
             rapidjson::kStringType);
     }
 
-    template <typename T>
-    typename std::enable_if_t<
-        std::is_convertible<T, JsonString>::value ||
-        std::is_convertible<T, JsonDouble>::value ||
-        std::is_convertible<T, JsonBool>::value ||
-        std::is_convertible<T, JsonInt>::value ||
-        std::is_convertible<T, JsonUint>::value>
-    Write(const T value)
+    void Write(const JsonString value)
+    {
+        Write(value.value);
+    }
+
+    void Write(const JsonDouble value)
+    {
+        Write(value.value);
+    }
+
+    void Write(const JsonBool value)
+    {
+        Write(value.value);
+    }
+
+    void Write(const JsonInt value)
+    {
+        Write(value.value);
+    }
+
+    void Write(const JsonUint value)
     {
         Write(value.value);
     }

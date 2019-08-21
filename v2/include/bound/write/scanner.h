@@ -107,15 +107,27 @@ public:
         return value.value.length() == 0 ? 0 : 1;
     }
 
-    template <typename T>
-    typename std::enable_if<
-        std::is_convertible<T, JsonString>::value ||
-            std::is_convertible<T, JsonDouble>::value ||
-            std::is_convertible<T, JsonBool>::value ||
-            std::is_convertible<T, JsonInt>::value ||
-            std::is_convertible<T, JsonUint>::value,
-        unsigned>::type
-    Scan(const T value)
+    unsigned Scan(const JsonString value)
+    {
+        return value.render ? Scan(value.value) : 0;
+    }
+
+    unsigned Scan(const JsonDouble value)
+    {
+        return value.render ? Scan(value.value) : 0;
+    }
+
+    unsigned Scan(const JsonBool value)
+    {
+        return value.render ? Scan(value.value) : 0;
+    }
+
+    unsigned Scan(const JsonInt value)
+    {
+        return value.render ? Scan(value.value) : 0;
+    }
+
+    unsigned Scan(const JsonUint value)
     {
         return value.render ? Scan(value.value) : 0;
     }
