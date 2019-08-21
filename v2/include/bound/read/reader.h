@@ -42,9 +42,12 @@ private:
     typename std::enable_if_t<is_setter<M>::value>
     Set(T &instance, M property)
     {
-        typename is_setter<M>::arg_type value;
+        typename ReadTarget<M>::type value;
         Read(value);
-        (instance.*(property))(value);
+        if (read_status_.success())
+        {
+            (instance.*(property))(value);
+        }
     }
 
     template <typename T, typename M>
@@ -53,20 +56,7 @@ private:
         !std::is_member_object_pointer<M>::value>
     Set(T &instance, M property)
     {
-        // Do nothing
-    }
-
-    template <typename T>
-    void FindProperty(T &instance, std::string &key)
-    {
-        ListProperties(instance, [&](auto &property) {
-            if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
-            {
-                return;
-            }
-
-            Set(instance, property.member);
-        });
+        // Do nothing, needed for compilation
     }
 
     void Prime()
@@ -97,10 +87,20 @@ public:
 
             if (event_type & kEventTypeStartValue)
             {
-                FindProperty(instance, key);
+                ListProperties(instance, [&](auto &property) {
+                    if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
+                    {
+                        return;
+                    }
+
+                    Set(instance, property.member);
+                });
+
                 last_token_was_key = false;
+                continue;
             }
-            else if (event_type == Event::kTypeKey)
+
+            if (event_type == Event::kTypeKey)
             {
                 if (last_token_was_key)
                 {
@@ -110,16 +110,15 @@ public:
 
                 last_token_was_key = true;
                 key = parser_.event().string_value;
+                continue;
             }
-            else if (event_type == Event::kTypeEndObject)
-            {
-                break;
-            }
-            else
+
+            if (event_type != Event::kTypeEndObject)
             {
                 read_status_.set_error_message("Unexpected token=" + parser_.event().ToString());
-                break;
             }
+
+            break;
         }
     }
 
@@ -139,7 +138,10 @@ public:
             {
                 typename T::value_type child;
                 Read(child);
-                instance.push_back(child);
+                if (read_status_.success())
+                {
+                    instance.push_back(child);
+                }
                 continue;
             }
             else if (event_type != Event::kTypeEndArray)
@@ -162,27 +164,35 @@ public:
         case Event::kTypeNull:
             Assign(instance, nullptr, read_status_);
             break;
+
         case Event::kTypeBool:
             Assign(instance, parser_.event().value.bool_value, read_status_);
             break;
+
         case Event::kTypeInt:
             Assign(instance, parser_.event().value.int_value, read_status_);
             break;
+
         case Event::kTypeUint:
             Assign(instance, parser_.event().value.unsigned_value, read_status_);
             break;
+
         case Event::kTypeInt64:
             Assign(instance, parser_.event().value.int64_t_value, read_status_);
             break;
+
         case Event::kTypeUint64:
             Assign(instance, parser_.event().value.uint64_t_value, read_status_);
             break;
+
         case Event::kTypeDouble:
             Assign(instance, parser_.event().value.double_value, read_status_);
             break;
+
         case Event::kTypeString:
             Assign(instance, parser_.event().string_value, read_status_);
             break;
+
         default:
             read_status_.set_error_message("Invalid read operation=" + parser_.event().ToString());
             break;

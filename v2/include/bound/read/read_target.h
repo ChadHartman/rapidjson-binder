@@ -26,17 +26,17 @@ struct ReadTarget<T (Class::*)()>
 };
 
 template <typename T, typename Class>
-struct ReadTarget<T(Class::*)>
+struct ReadTarget<void (Class::*)(T)>
 {
     using type = T;
     const static bool is_assignable = true;
 };
 
 template <typename T, typename Class>
-struct ReadTarget<void (Class::*)(T)>
+struct ReadTarget<T(Class::*)>
 {
     using type = T;
-    const static bool is_assignable = true;
+    const static bool is_assignable = std::is_member_object_pointer<T(Class::*)>::value;
 };
 
 } // namespace read
