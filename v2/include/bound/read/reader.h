@@ -19,25 +19,27 @@ private:
     Parser<Stream> &parser_;
     ReadStatus &read_status_;
 
-    template <typename T, typename M, typename V>
+    template <typename T, typename M>
     typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-    Set(T &instance, M property, V &&value)
+    Set(T &instance, M property)
     {
-        instance.*(property) = value;
+        Read(instance.*(property));
     }
 
-    template <typename T, typename M, typename V>
+    template <typename T, typename M>
     typename std::enable_if_t<is_setter<M>::value>
-    Set(T &instance, M property, V &&value)
+    Set(T &instance, M property)
     {
+        typename is_setter<M>::arg_type value;
+        Read(value);
         (instance.*(property))(value);
     }
 
-    template <typename T, typename M, typename V>
+    template <typename T, typename M>
     typename std::enable_if_t<
         !is_setter<M>::value &&
         !std::is_member_object_pointer<M>::value>
-    Set(T &instance, M property, V &&value)
+    Set(T &instance, M property)
     {
         // Do nothing
     }
@@ -51,10 +53,7 @@ private:
                 return;
             }
 
-            using ChildType = typename ReadTarget<decltype(property.member)>::type;
-            ChildType target;
-            Read(target);
-            Set(instance, property.member, target);
+            Set(instance, property.member);
         });
     }
 

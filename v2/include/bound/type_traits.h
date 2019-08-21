@@ -80,6 +80,7 @@ struct is_setter : std::false_type
 template <typename T, typename Class>
 struct is_setter<void (Class::*)(T)> : std::true_type
 {
+    using arg_type = T;
 };
 
 template <typename T>
