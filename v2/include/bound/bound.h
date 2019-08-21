@@ -13,8 +13,7 @@
 #include <string>
 
 #include "write/writer.h"
-#include "read/object_reader.h"
-#include "read/array_reader.h"
+#include "read/reader.h"
 
 namespace bound
 {
