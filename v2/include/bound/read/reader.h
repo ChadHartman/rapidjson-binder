@@ -39,7 +39,23 @@ private:
     }
 
     template <typename T, typename M>
-    typename std::enable_if_t<is_setter<M>::value>
+    typename std::enable_if_t<
+        is_setter<M>::value &&
+        is_setter<M>::arg_is_pointer>
+    Set(T &instance, M property)
+    {
+        typename ReadTarget<M>::type value;
+        Read(value);
+        if (read_status_.success())
+        {
+            (instance.*(property))(&value);
+        }
+    }
+
+    template <typename T, typename M>
+    typename std::enable_if_t<
+        is_setter<M>::value &&
+        !is_setter<M>::arg_is_pointer>
     Set(T &instance, M property)
     {
         typename ReadTarget<M>::type value;

@@ -6,6 +6,49 @@
 namespace bound_read_reader_tests_hpp_
 {
 
+template <typename T>
+class Foo
+{
+private:
+    T alpha_;
+
+public:
+    T beta;
+
+    void set_alpha(T alpha)
+    {
+        alpha_ = alpha;
+    }
+
+    T alpha() const
+    {
+        return alpha_;
+    }
+
+    void gamma(T *gamma)
+    {
+        alpha_ = *gamma;
+    }
+
+    void delta(T &delta)
+    {
+        alpha_ = delta;
+    }
+
+    void epsilon(const T &epsilon)
+    {
+        alpha_ = epsilon;
+    }
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&Foo::set_alpha, "alpha"),
+        bound::property(&Foo::alpha, "alpha"),
+        bound::property(&Foo::beta, "beta"),
+        bound::property(&Foo::gamma, "gamma"),
+        bound::property(&Foo::delta, "delta"),
+        bound::property(&Foo::epsilon, "epsilon"));
+};
+
 struct Info
 {
     std::string name;
@@ -60,21 +103,39 @@ public:
 
 TEST_CASE("Reader Tests", "[reader_tests]")
 {
-    User user = bound::read::FromJson<User>(
-        "{\"info\":{\"name\":\"alpha\"},"
-        "\"birthdate\":17,"
-        "\"aliases\":[\"beta\",\"gamma\"],"
-        "\"locked\":false}");
+    SECTION("User creation")
+    {
+        User user = bound::read::FromJson<User>(
+            "{\"info\":{\"name\":\"alpha\"},"
+            "\"birthdate\":17,"
+            "\"aliases\":[\"beta\",\"gamma\"],"
+            "\"locked\":false}");
 
-    printf("%s\n", bound::write::ToJson(user, bound::WriteConfig()).c_str());
+        printf("%s\n", bound::write::ToJson(user, bound::WriteConfig()).c_str());
 
-    REQUIRE(user.info.name == "alpha");
-    REQUIRE(user.birthdate.timestamp_ms == 17);
-    REQUIRE(user.locked() == false);
+        REQUIRE(user.info.name == "alpha");
+        REQUIRE(user.birthdate.timestamp_ms == 17);
+        REQUIRE(user.locked() == false);
 
-    REQUIRE(std::is_same<Info, bound::read::ReadTarget<decltype(&User::info)>::type>::value);
-    REQUIRE(std::is_same<bool, bound::read::ReadTarget<decltype(&User::set_locked)>::type>::value);
-    REQUIRE(std::is_same<bound::read::Unassignable, bound::read::ReadTarget<decltype(&User::locked)>::type>::value);
+        REQUIRE(std::is_same<Info, bound::read::ReadTarget<decltype(&User::info)>::type>::value);
+        REQUIRE(std::is_same<bool, bound::read::ReadTarget<decltype(&User::set_locked)>::type>::value);
+        printf("%s\n", typeid(bound::read::ReadTarget<decltype(&User::locked)>::type).name());
+        REQUIRE(std::is_same<bound::read::Unassignable, bound::read::ReadTarget<decltype(&User::locked)>::type>::value);
+    }
+
+    SECTION("int")
+    {
+        Foo<int> item = bound::read::FromJson<Foo<int>>(
+            "{"
+            "\"alpha\":1,"
+            "\"beta\":2,"
+            "\"gamma\":3,"
+            "\"delta\":4,"
+            "\"epsilon\":5"
+            "}");
+
+        printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
+    }
 }
 
 } // namespace bound_read_reader_tests_hpp_

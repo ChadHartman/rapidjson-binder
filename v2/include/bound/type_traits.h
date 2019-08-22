@@ -75,23 +75,14 @@ struct is_getter<T (Class::*)() const> : std::true_type
 template <typename T>
 struct is_setter : std::false_type
 {
+    const static bool arg_is_pointer = false;
 };
 
 template <typename T, typename Class>
 struct is_setter<void (Class::*)(T)> : std::true_type
 {
     using arg_type = T;
-};
-
-template <typename T>
-struct setter_arg
-{
-};
-
-template <typename T, typename Class>
-struct setter_arg<void (Class::*)(T)>
-{
-    using type = T;
+    const static bool arg_is_pointer = std::is_pointer<T>::value;
 };
 
 } // namespace bound
