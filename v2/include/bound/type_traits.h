@@ -41,6 +41,17 @@ struct is_seq_container<Container<T>>
 };
 
 template <typename T>
+struct is_json_properties : std::false_type
+{
+};
+
+template <template <typename...> class Container, typename V>
+struct is_json_properties<Container<V>>
+{
+    const static bool value = std::is_same<Container<V>, JsonProperties<V>>::value;
+};
+
+template <typename T>
 struct is_int
 {
     constexpr static bool value =

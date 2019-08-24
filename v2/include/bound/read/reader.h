@@ -75,6 +75,40 @@ private:
         // Do nothing, needed for compilation
     }
 
+    template <typename T>
+    typename std::enable_if_t<is_bound<T>::value>
+    SetProperty(T &instance, std::string &key)
+    {
+        bool found = false;
+
+        ListProperties(instance, [&](auto &property) {
+            if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
+            {
+                return;
+            }
+
+            found = true;
+            Set(instance, property.member);
+        });
+
+        if (!found)
+        {
+            // TODO
+        }
+    }
+
+    template <template <typename...> class Container, typename V>
+    typename std::enable_if_t<std::is_same<Container<V>, JsonProperties<V>>::value>
+    SetProperty(Container<V> &instance, std::string &key)
+    {
+        V value;
+        Read(value);
+        if (read_status_.success())
+        {
+            instance[key] = value;
+        }
+    }
+
     void Prime()
     {
         if (parser_.event().type == Event::kTypeBegin)
@@ -88,7 +122,7 @@ public:
         : parser_{parser}, read_status_{read_status} {}
 
     template <typename T>
-    typename std::enable_if_t<is_bound<T>::value>
+    typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
     Read(T &instance)
     {
         std::string key;
@@ -103,15 +137,13 @@ public:
 
             if (event_type & kEventTypeStartValue)
             {
-                ListProperties(instance, [&](auto &property) {
-                    if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
-                    {
-                        return;
-                    }
+                if (!last_token_was_key)
+                {
+                    read_status_.set_error_message("No key found for " + parser_.event().ToString());
+                    break;
+                }
 
-                    Set(instance, property.member);
-                });
-
+                SetProperty(instance, key);
                 last_token_was_key = false;
                 continue;
             }
@@ -214,16 +246,28 @@ public:
             break;
         }
     }
-};
+}; // namespace read
+
+template <typename T>
+T FromJson(std::string &json, ReadStatus &read_status)
+{
+    T instance;
+    Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
+    Reader<rapidjson::StringStream>{parser, read_status}.Read(instance);
+    return instance;
+}
+
+template <typename T>
+T FromJson(std::string &&json, ReadStatus &read_status)
+{
+    return FromJson<T>(json, read_status);
+}
 
 template <typename T>
 T FromJson(std::string &&json)
 {
-    T instance;
-    Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
     ReadStatus read_status;
-    Reader<rapidjson::StringStream>{parser, read_status}.Read(instance);
-    return instance;
+    return FromJson<T>(json, read_status);
 }
 
 } // namespace read

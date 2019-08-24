@@ -119,7 +119,6 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
         REQUIRE(std::is_same<Info, bound::read::ReadTarget<decltype(&User::info)>::type>::value);
         REQUIRE(std::is_same<bool, bound::read::ReadTarget<decltype(&User::set_locked)>::type>::value);
-        printf("%s\n", typeid(bound::read::ReadTarget<decltype(&User::locked)>::type).name());
         REQUIRE(std::is_same<bound::read::Unassignable, bound::read::ReadTarget<decltype(&User::locked)>::type>::value);
     }
 
@@ -135,6 +134,21 @@ TEST_CASE("Reader Tests", "[reader_tests]")
             "}");
 
         printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
+    }
+
+    SECTION("map<string, int>")
+    {
+        Foo<bound::JsonProperties<int>> item = bound::read::FromJson<Foo<bound::JsonProperties<int>>>(
+            "{"
+            "\"alpha\":{\"i\":1},"
+            "\"beta\":{\"i\":2},"
+            "\"gamma\":{\"i\":3},"
+            "\"delta\":{\"i\":4},"
+            "\"epsilon\":{\"i\":5}"
+            "}");
+
+        printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
+        
     }
 }
 
