@@ -141,9 +141,8 @@ private:
         }
     }
 
-    template <template <typename...> class Container, typename V>
-    typename std::enable_if_t<std::is_same<Container<V>, JsonProperties<V>>::value>
-    SetProperty(Container<V> &instance, std::string &key)
+    template <typename V>
+    void SetProperty(JsonProperties<V> &instance, std::string &key)
     {
         printf("Set property %s (on map)\n", key.c_str());
 
