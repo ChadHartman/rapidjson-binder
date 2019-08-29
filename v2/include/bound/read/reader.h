@@ -31,6 +31,28 @@ private:
     Parser<Stream> &parser_;
     ReadStatus &read_status_;
 
+    // Recusively skips unmapped sections of json
+    void Skip()
+    {
+        if (parser_.event().IsSimple())
+        {
+            // Skipped
+            return;
+        }
+
+        const static unsigned long start_complex = Event::kTypeStartArray | Event::kTypeStartObject;
+        const static unsigned long end_complex = Event::kTypeEndArray | Event::kTypeEndObject;
+
+        while (parser_.FetchNextEvent() && !(parser_.event().type & end_complex))
+        {
+            if (parser_.event().type & start_complex)
+            {
+                // Recurse lest we bail too early
+                Skip();
+            }
+        }
+    }
+
     template <typename T, typename M>
     typename std::enable_if_t<std::is_member_object_pointer<M>::value>
     Set(T &instance, M property)
@@ -93,7 +115,18 @@ private:
 
         if (!found)
         {
-            // TODO
+            ListProperties(instance, [&](auto &property) {
+                if (property.is_json_props)
+                {
+                    found = true;
+                    Set(instance, property.member);
+                }
+            });
+        }
+
+        if (!found)
+        {
+            Skip();
         }
     }
 
@@ -119,7 +152,8 @@ private:
 
 public:
     Reader(Parser<Stream> &parser, ReadStatus &read_status)
-        : parser_{parser}, read_status_{read_status} {}
+        : parser_{parser},
+          read_status_{read_status} {}
 
     template <typename T>
     typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>

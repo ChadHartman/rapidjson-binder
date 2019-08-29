@@ -24,6 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <map>
 #include "types.h"
+#include "type_traits.h"
 
 namespace bound
 {
@@ -43,6 +44,7 @@ struct Property
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
     const bool render_name;
+    const bool is_json_props = is_json_properties<T Class::*>::value;
 };
 
 template <typename Class, typename T>
@@ -52,7 +54,10 @@ constexpr auto property(T Class::*member, const char *name)
 }
 
 template <typename Class, typename T>
-constexpr auto property(JsonProperties<T> Class::*member)
+constexpr typename std::enable_if<
+    std::is_member_object_pointer<JsonProperties<T> Class::*>::value,
+    Property<Class, JsonProperties<T>>>::type
+property(JsonProperties<T> Class::*member)
 {
     return Property<Class, JsonProperties<T>>{member, "", false};
 }
