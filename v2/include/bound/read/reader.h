@@ -34,6 +34,8 @@ private:
     // Recusively skips unmapped sections of json
     void Skip()
     {
+        printf("Skipped\n");
+
         if (parser_.event().IsSimple())
         {
             // Skipped
@@ -57,6 +59,8 @@ private:
     typename std::enable_if_t<std::is_member_object_pointer<M>::value>
     Set(T &instance, M property)
     {
+        printf("Set Member Object\n");
+
         Read(instance.*(property));
     }
 
@@ -66,6 +70,8 @@ private:
         is_setter<M>::arg_is_pointer>
     Set(T &instance, M property)
     {
+        printf("Set Pointer Setter\n");
+
         typename ReadTarget<M>::type value;
         Read(value);
         if (read_status_.success())
@@ -80,6 +86,8 @@ private:
         !is_setter<M>::arg_is_pointer>
     Set(T &instance, M property)
     {
+        printf("Set Setter %s\n", typeid(typename ReadTarget<M>::type).name());
+
         typename ReadTarget<M>::type value;
         Read(value);
         if (read_status_.success())
@@ -94,6 +102,7 @@ private:
         !std::is_member_object_pointer<M>::value>
     Set(T &instance, M property)
     {
+        printf("Set Empty\n");
         // Do nothing, needed for compilation
     }
 
@@ -101,6 +110,8 @@ private:
     typename std::enable_if_t<is_bound<T>::value>
     SetProperty(T &instance, std::string &key)
     {
+        printf("Set property %s (setting on bound instance)\n", key.c_str());
+
         bool found = false;
 
         ListProperties(instance, [&](auto &property) {
@@ -134,6 +145,8 @@ private:
     typename std::enable_if_t<std::is_same<Container<V>, JsonProperties<V>>::value>
     SetProperty(Container<V> &instance, std::string &key)
     {
+        printf("Set property %s (on map)\n", key.c_str());
+
         V value;
         Read(value);
         if (read_status_.success())
@@ -159,6 +172,8 @@ public:
     typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
     Read(T &instance)
     {
+        printf("Read map/bound %s\n", parser_.event().ToString().c_str());
+
         std::string key;
         bool last_token_was_key = false;
         Event::Type event_type;
@@ -208,6 +223,8 @@ public:
     typename std::enable_if_t<is_seq_container<T>::value>
     Read(T &instance)
     {
+        printf("Read array %s\n", parser_.event().ToString().c_str());
+
         Event::Type event_type;
 
         Prime();
@@ -236,9 +253,14 @@ public:
     }
 
     template <typename T>
-    typename std::enable_if_t<!is_bound<T>::value && !is_seq_container<T>::value>
+    typename std::enable_if_t<
+        !is_bound<T>::value &&
+        !is_seq_container<T>::value &&
+        !is_json_properties<T>::value>
     Read(T &instance)
     {
+        printf("Read simple %s\n", parser_.event().ToString().c_str());
+
         Prime();
 
         switch (parser_.event().type)

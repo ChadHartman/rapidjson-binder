@@ -45,10 +45,10 @@ struct is_json_properties : std::false_type
 {
 };
 
-template <template <typename...> class Container, typename V>
-struct is_json_properties<Container<V>>
+template <template <typename...> class Map, typename V>
+struct is_json_properties<Map<std::string, V>>
 {
-    const static bool value = std::is_same<Container<V>, JsonProperties<V>>::value;
+    const static bool value = std::is_same<Map<std::string, V>, JsonProperties<V>>::value;
 };
 
 template <typename T>
@@ -74,8 +74,9 @@ struct is_getter : std::false_type
 };
 
 template <typename T, typename Class>
-struct is_getter<T (Class::*)()> : std::true_type
+struct is_getter<T (Class::*)()>
 {
+    const static bool value = !std::is_same<void, T>::value;
 };
 
 template <typename T, typename Class>

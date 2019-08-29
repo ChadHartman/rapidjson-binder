@@ -151,6 +151,9 @@ TEST_CASE("Reader Tests", "[reader_tests]")
                 "}");
 
         printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
+
+        REQUIRE(5 == item.alpha().at("i"));
+        REQUIRE(2 == item.beta.at("i"));
     }
 }
 
