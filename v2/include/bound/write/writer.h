@@ -179,7 +179,7 @@ public:
         Write(value.value);
     }
 
-    void Write(const JsonDouble value)
+    void Write(const JsonFloat value)
     {
         Write(value.value);
     }

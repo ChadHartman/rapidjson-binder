@@ -112,7 +112,7 @@ public:
         return value.render ? Scan(value.value) : 0;
     }
 
-    unsigned Scan(const JsonDouble value)
+    unsigned Scan(const JsonFloat value)
     {
         return value.render ? Scan(value.value) : 0;
     }
