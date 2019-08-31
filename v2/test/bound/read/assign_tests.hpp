@@ -6,8 +6,8 @@
 namespace bound_read_assign_tests_hpp_
 {
 
-template <typename JsonType, typename ValueType, typename InterpretedType>
-void test(ValueType value, InterpretedType expected)
+template <typename JsonType, typename ValueType>
+void test(ValueType value, typename JsonType::type expected)
 {
     bound::ReadStatus status;
     JsonType target;
@@ -22,18 +22,25 @@ void test(ValueType value, InterpretedType expected)
 
 TEST_CASE("Assign Tests", "[assign_tests]")
 {
-    // bound::JsonInt json_int;
-    // int64_t value = 12;
-    bound::ReadStatus status;
-    // bound::read::Assign(json_int, value, status);
-
-    // using A = bound::JsonInt;
-    // using B = bool &;
-
-    SECTION("JsonInt|bool")
+    SECTION("JsonInt")
     {
-        test<bound::JsonInt, int64_t, bool>(false, 0);
-        test<bound::JsonInt, int64_t, bool>(true, 1);
+        test<bound::JsonInt, bool>(true, 1);
+        test<bound::JsonInt, bool>(false, 0);
+
+        test<bound::JsonInt, int>(-1, -1);
+        test<bound::JsonInt, int>(42, 42);
+
+        test<bound::JsonInt, unsigned>(0, 0);
+        test<bound::JsonInt, unsigned>(132, 132);
+
+        test<bound::JsonInt, int64_t>(-239484, -239484);
+        test<bound::JsonInt, int64_t>(239484, 239484);
+
+        test<bound::JsonInt, uint64_t>(0, 0);
+        test<bound::JsonInt, uint64_t>(203923049, 203923049);
+
+        test<bound::JsonInt, double>(0.0, 0);
+        test<bound::JsonInt, double>(23429.1310941, 23429);
     }
 }
 

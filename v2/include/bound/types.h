@@ -13,6 +13,8 @@ using JsonProperties = std::map<std::string, T>;
 template <typename T>
 struct JsonProperty
 {
+    using type = T;
+
     T value;
 
     JsonProperty<T> &operator=(const T &new_val)
