@@ -116,25 +116,27 @@ TEST_CASE("Assign Tests", "[assign_tests]")
     }
     //---
     // SECTION("JsonUint")
-    // {
-    //     test<bound::JsonInt, bool>(true, 1);
-    //     test<bound::JsonInt, bool>(false, 0);
+       SECTION("JsonUint")
+    {
+        test<bound::JsonUint, bool>(true, 1);
+        test<bound::JsonUint, bool>(false, 0);
 
-    //     test<bound::JsonInt, int>(-1, -1);
-    //     test<bound::JsonInt, int>(42, 42);
+        test<bound::JsonUint, int>(1, 1);
+        test<bound::JsonUint, int>(42, 42);
 
-    //     test<bound::JsonInt, unsigned>(0, 0);
-    //     test<bound::JsonInt, unsigned>(132, 132);
+        test<bound::JsonUint, unsigned>(0, 0);
+        test<bound::JsonUint, unsigned>(132, 132);
 
-    //     test<bound::JsonInt, int64_t>(-239484, -239484);
-    //     test<bound::JsonInt, int64_t>(239484, 239484);
+        test<bound::JsonUint, int64_t>(1, 1);
+        test<bound::JsonUint, int64_t>(239484, 239484);
 
-    //     test<bound::JsonInt, uint64_t>(0, 0);
-    //     test<bound::JsonInt, uint64_t>(203923049, 203923049);
+        test<bound::JsonUint, uint64_t>(0, 0);
+        test<bound::JsonUint, uint64_t>(203923049, 203923049);
 
-    //     test<bound::JsonInt, double>(0.0, 0);
-    //     test<bound::JsonInt, double>(23429.1310941, 23429);
-    // }
+        test<bound::JsonUint, double>(0.0, 0);
+        test<bound::JsonUint, double>(23429.1310941, 23429);
+    }
+    //---
 
     SECTION("JsonInt")
     {
