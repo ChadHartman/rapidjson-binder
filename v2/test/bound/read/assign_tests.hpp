@@ -49,8 +49,21 @@ TEST_CASE("Assign Tests", "[assign_tests]")
     }
     SECTION("JsonString|double")
     {
-        // TODO test<bound::JsonString, double>(0.0, "0.000000");
-        // TODO test<bound::JsonString, double>(23429.1310941, "23429.131");
+
+        bound::ReadStatus status;
+        bound::JsonString target;
+        double value = 0.0;
+
+        REQUIRE(bound::read::is_assignable<bound::JsonString, decltype(value)>::value);
+        REQUIRE(!bound::read::is_convertable<bound::JsonString, decltype(value)>::value);
+        REQUIRE(!bound::read::is_unassignable<bound::JsonString, decltype(value)>::value);
+
+        bound::read::Assign(target, value, status);
+        REQUIRE(target.value.rfind("0.0", 0) == 0);
+
+        value = 23429.1310941;
+        bound::read::Assign(target, value, status);
+        REQUIRE(target.value.rfind("23429.131", 0) == 0);
     }
 
     SECTION("JsonFloat|bool")
@@ -116,7 +129,7 @@ TEST_CASE("Assign Tests", "[assign_tests]")
     }
     //---
     // SECTION("JsonUint")
-       SECTION("JsonUint")
+    SECTION("JsonUint")
     {
         test<bound::JsonUint, bool>(true, 1);
         test<bound::JsonUint, bool>(false, 0);
