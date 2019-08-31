@@ -25,7 +25,7 @@ struct JsonProperty
 
     template <typename V>
     typename std::enable_if<std::is_arithmetic<V>::value, JsonProperty<T> &>::type
-    operator=(const T &new_val)
+    operator=(const V &new_val)
     {
         value = static_cast<T>(new_val);
         return *this;
@@ -34,11 +34,39 @@ struct JsonProperty
     bool render = true;
 };
 
-typedef JsonProperty<std::string> JsonString;
 typedef JsonProperty<double> JsonFloat;
 typedef JsonProperty<bool> JsonBool;
 typedef JsonProperty<uint64_t> JsonUint;
 typedef JsonProperty<int64_t> JsonInt;
+
+struct JsonString
+{
+    using type = std::string;
+
+    std::string value;
+
+    JsonString &operator=(const std::string &new_val)
+    {
+        value = new_val;
+        return *this;
+    }
+
+    JsonString &operator=(const bool &new_val)
+    {
+        value = new_val ? "true" : "false";
+        return *this;
+    }
+
+    template <typename V>
+    typename std::enable_if<std::is_arithmetic<V>::value, JsonString &>::type
+    operator=(const V &new_val)
+    {
+        value = std::to_string(new_val);
+        return *this;
+    }
+
+    bool render = true;
+};
 
 struct JsonRaw
 {
