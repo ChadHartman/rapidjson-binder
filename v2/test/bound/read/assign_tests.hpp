@@ -52,7 +52,7 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         // TODO test<bound::JsonString, double>(0.0, "0.000000");
         // TODO test<bound::JsonString, double>(23429.1310941, "23429.131");
     }
-    //---
+
     SECTION("JsonFloat|bool")
     {
         test<bound::JsonFloat, bool>(true, 1.0);
@@ -84,27 +84,37 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         test<bound::JsonFloat, double>(23429.1310941, 23429.1310941);
     }
     //--
-    // SECTION("JsonBool")
-    // {
-    //     test<bound::JsonInt, bool>(true, 1);
-    //     test<bound::JsonInt, bool>(false, 0);
-
-    //     test<bound::JsonInt, int>(-1, -1);
-    //     test<bound::JsonInt, int>(42, 42);
-
-    //     test<bound::JsonInt, unsigned>(0, 0);
-    //     test<bound::JsonInt, unsigned>(132, 132);
-
-    //     test<bound::JsonInt, int64_t>(-239484, -239484);
-    //     test<bound::JsonInt, int64_t>(239484, 239484);
-
-    //     test<bound::JsonInt, uint64_t>(0, 0);
-    //     test<bound::JsonInt, uint64_t>(203923049, 203923049);
-
-    //     test<bound::JsonInt, double>(0.0, 0);
-    //     test<bound::JsonInt, double>(23429.1310941, 23429);
-    // }
-
+    SECTION("JsonBool|bool")
+    {
+        test<bound::JsonBool, bool>(true, true);
+        test<bound::JsonBool, bool>(false, false);
+    }
+    SECTION("JsonBool|int")
+    {
+        test<bound::JsonBool, int>(0, false);
+        test<bound::JsonBool, int>(42, true);
+    }
+    SECTION("JsonBool|unsigned")
+    {
+        test<bound::JsonBool, unsigned>(0, false);
+        test<bound::JsonBool, unsigned>(132, true);
+    }
+    SECTION("JsonFloat|int64_t")
+    {
+        test<bound::JsonBool, int64_t>(0, false);
+        test<bound::JsonBool, int64_t>(239484, true);
+    }
+    SECTION("JsonFloat|uint64_t")
+    {
+        test<bound::JsonBool, uint64_t>(0, false);
+        test<bound::JsonBool, uint64_t>(203923049, true);
+    }
+    SECTION("JsonFloat|double")
+    {
+        test<bound::JsonBool, double>(0.0, false);
+        test<bound::JsonBool, double>(23429.1310941, true);
+    }
+    //---
     // SECTION("JsonUint")
     // {
     //     test<bound::JsonInt, bool>(true, 1);
