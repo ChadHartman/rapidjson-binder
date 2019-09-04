@@ -111,8 +111,6 @@ TEST_CASE("Reader Tests", "[reader_tests]")
             "\"aliases\":[\"beta\",\"gamma\"],"
             "\"locked\":false}");
 
-        printf("%s\n", bound::write::ToJson(user, bound::WriteConfig()).c_str());
-
         REQUIRE(user.info.name == "alpha");
         REQUIRE(user.birthdate.timestamp_ms == 17);
         REQUIRE(user.locked() == false);
@@ -133,13 +131,12 @@ TEST_CASE("Reader Tests", "[reader_tests]")
             "\"epsilon\":5"
             "}");
 
-        printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
+        REQUIRE(5 == item.alpha());
+        REQUIRE(2 == item.beta);
     }
 
     SECTION("map<string, int>")
     {
-        // printf("--- --- ---\n");
-
         Foo<bound::JsonProperties<bound::JsonInt>>
             item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonInt>>>(
                 "{"
@@ -150,10 +147,26 @@ TEST_CASE("Reader Tests", "[reader_tests]")
                 "\"epsilon\":{\"i\":5}"
                 "}");
 
+        REQUIRE(5 == item.alpha().at("i").value);
+        REQUIRE(2 == item.beta.at("i").value);
+    }
+
+    SECTION("map<string, json>")
+    {
+        Foo<bound::JsonProperties<bound::JsonRaw>>
+            item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonRaw>>>(
+                "{"
+                "\"alpha\":{\"i\":{\"value\":1}},"
+                "\"beta\":{\"i\":{\"value\":2}},"
+                "\"gamma\":{\"i\":{\"value\":3}},"
+                "\"delta\":{\"i\":{\"value\":4}},"
+                "\"epsilon\":{\"i\":{\"value\":5}}"
+                "}");
+
         printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
 
-        // REQUIRE(5 == item.alpha().at("i").value);
-        // REQUIRE(2 == item.beta.at("i").value);
+        REQUIRE("{\"value\":5}" == item.alpha().at("i").value);
+        REQUIRE("{\"value\":2}" == item.beta.at("i").value);
     }
 }
 
