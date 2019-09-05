@@ -1,8 +1,6 @@
 #ifndef BOUND_READ_READER_H_
 #define BOUND_READ_READER_H_
 
-#define BOUND_READ_READER_H_DEBUG
-
 #include "parser.h"
 #include "read_target.h"
 #include "assign.h"
@@ -33,6 +31,7 @@ private:
     Parser<Stream> &parser_;
     ReadStatus &read_status_;
 
+    // Writer for JsonRaw properties
     void Write(rapidjson::Writer<rapidjson::StringBuffer> &writer)
     {
         do
@@ -40,105 +39,59 @@ private:
             switch (parser_.event().type)
             {
             case Event::kTypeNull:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write NULL\n");
-#endif
                 writer.Null();
                 break;
 
             case Event::kTypeBool:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write BOOL\n");
-#endif
                 writer.Bool(parser_.event().value.bool_value);
                 break;
 
             case Event::kTypeInt:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write INT\n");
-#endif
                 writer.Int(parser_.event().value.int_value);
                 break;
 
             case Event::kTypeUint:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write UINT\n");
-#endif
                 writer.Uint(parser_.event().value.unsigned_value);
                 break;
 
             case Event::kTypeInt64:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write INT64\n");
-#endif
                 writer.Int64(parser_.event().value.int64_t_value);
                 break;
 
             case Event::kTypeUint64:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write UINT64\n");
-#endif
                 writer.Uint64(parser_.event().value.uint64_t_value);
                 break;
 
             case Event::kTypeDouble:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write DOUBLE\n");
-#endif
                 writer.Double(parser_.event().value.double_value);
                 break;
 
             case Event::kTypeString:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write STRING\n");
-#endif
                 writer.String(parser_.event().string_value.c_str());
                 break;
 
             case Event::kTypeStartObject:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write START OBJ\n");
-#endif
                 writer.StartObject();
                 parser_.FetchNextEvent();
                 Write(writer);
                 return;
 
             case Event::kTypeKey:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write KEY\n");
-#endif
                 writer.Key(parser_.event().string_value.c_str());
                 break;
 
             case Event::kTypeStartArray:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write START ARR\n");
-#endif
                 writer.StartArray();
                 parser_.FetchNextEvent();
                 Write(writer);
                 return;
 
             case Event::kTypeEndArray:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write END ARR\n");
-#endif
                 writer.EndArray();
                 return;
 
             case Event::kTypeEndObject:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("Write END OBJ\n");
-#endif
                 writer.EndObject();
-                return;
-
-            default:
-#ifdef BOUND_READ_READER_H_DEBUG
-                printf("UNKNOWN\n");
-#endif
-                // TODO: consider error
                 return;
             }
         } while (parser_.FetchNextEvent());
@@ -349,13 +302,9 @@ public:
 
     void Read(JsonRaw &instance)
     {
-        printf("Preparing Buffer\n");
         rapidjson::StringBuffer buffer;
-        printf("Preparing writer\n");
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        printf("Writing to writer\n");
         Write(writer);
-        printf("Getting value\n");
         instance.value = buffer.GetString();
     }
 
@@ -410,7 +359,7 @@ public:
             break;
         }
     }
-}; // namespace read
+};
 
 template <typename T>
 T FromJson(std::string &json, ReadStatus &read_status)
