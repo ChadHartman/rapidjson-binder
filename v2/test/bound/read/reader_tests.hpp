@@ -120,7 +120,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         REQUIRE(std::is_same<bound::read::Unassignable, bound::read::ReadTarget<decltype(&User::locked)>::type>::value);
     }
 
-    SECTION("int")
+    SECTION("Obj with ints")
     {
         Foo<int> item = bound::read::FromJson<Foo<int>>(
             "{"
@@ -135,7 +135,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         REQUIRE(2 == item.beta);
     }
 
-    SECTION("map<string, int>")
+    SECTION("Obj with map<string, int>")
     {
         Foo<bound::JsonProperties<bound::JsonInt>>
             item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonInt>>>(
@@ -151,7 +151,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         REQUIRE(2 == item.beta.at("i").value);
     }
 
-    SECTION("map<string, json>")
+    SECTION("Obj with map<string, json>")
     {
         Foo<bound::JsonProperties<bound::JsonRaw>>
             item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonRaw>>>(
@@ -163,10 +163,41 @@ TEST_CASE("Reader Tests", "[reader_tests]")
                 "\"epsilon\":{\"i\":{\"value\":5}}"
                 "}");
 
-        printf("%s\n", bound::write::ToJson(item, bound::WriteConfig()).c_str());
-
         REQUIRE("{\"value\":5}" == item.alpha().at("i").value);
         REQUIRE("{\"value\":2}" == item.beta.at("i").value);
+    }
+
+    SECTION("int")
+    {
+        REQUIRE(1 == bound::read::FromJson<int>("1"));
+    }
+
+    SECTION("string")
+    {
+        REQUIRE("value" == bound::read::FromJson<std::string>("\"value\""));
+    }
+
+    SECTION("map<string, string>")
+    {
+        using Json = std::map<std::string, std::string>;
+        Json item = bound::read::FromJson<Json>("{\"foo\":\"value\"}");
+        REQUIRE("value" == item.at("foo"));
+    }
+
+    SECTION("list<string>")
+    {
+        using Container = std::list<std::string>;
+        Container item = bound::read::FromJson<Container>("[\"foo\",\"bar\"]");
+        REQUIRE("foo" == item.front());
+        REQUIRE("bar" == item.back());
+    }
+
+    SECTION("deque<int>")
+    {
+        using Container = std::deque<int>;
+        Container item = bound::read::FromJson<Container>("[-1,100]");
+        REQUIRE(-1 == item[0]);
+        REQUIRE(100 == item[1]);
     }
 }
 
