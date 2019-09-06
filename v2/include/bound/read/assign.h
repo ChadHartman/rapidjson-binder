@@ -1,7 +1,6 @@
 #ifndef BOUND_READ_ASSIGN_H_
 #define BOUND_READ_ASSIGN_H_
 
-#include "../read_status.h"
 #include "../type_traits.h"
 
 namespace bound
@@ -44,31 +43,28 @@ struct is_unassignable
 
 // Simple assign
 template <typename A, typename B>
-typename std::enable_if_t<is_assignable<A, B>::value>
-Assign(A &a, B &b, ReadStatus &status)
+typename std::enable_if<is_assignable<A, B>::value, bool>::type
+Assign(A &a, B &b)
 {
     a = b;
+    return true;
 }
 
 // Conversion assign
 template <typename A, typename B>
-typename std::enable_if_t<is_convertable<A, B>::value>
-Assign(A &a, B &b, ReadStatus &status)
+typename std::enable_if<is_convertable<A, B>::value, bool>::type
+Assign(A &a, B &b)
 {
     a = static_cast<A>(b);
+    return true;
 }
 
 // Incompatible assignment
 template <typename A, typename B>
-typename std::enable_if_t<is_unassignable<A, B>::value>
-Assign(A &a, B &b, ReadStatus &status)
+typename std::enable_if<is_unassignable<A, B>::value, bool>::type
+Assign(A &a, B &b)
 {
-    std::string error_message = "Cannot assign type \"";
-    error_message += typeid(A).name();
-    error_message += "\" with type \"";
-    error_message += typeid(B).name();
-    error_message += "\".";
-    status.set_error_message(error_message);
+    return false;
 }
 
 } // namespace read

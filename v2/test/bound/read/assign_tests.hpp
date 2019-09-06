@@ -9,14 +9,13 @@ namespace bound_read_assign_tests_hpp_
 template <typename JsonType, typename ValueType>
 void test(ValueType value, typename JsonType::type expected)
 {
-    bound::ReadStatus status;
     JsonType target;
 
     REQUIRE(bound::read::is_assignable<JsonType, decltype(value)>::value);
     REQUIRE(!bound::read::is_convertable<JsonType, decltype(value)>::value);
     REQUIRE(!bound::read::is_unassignable<JsonType, decltype(value)>::value);
 
-    bound::read::Assign(target, value, status);
+    REQUIRE(bound::read::Assign(target, value));
     REQUIRE(target.value == expected);
 }
 
@@ -49,8 +48,6 @@ TEST_CASE("Assign Tests", "[assign_tests]")
     }
     SECTION("JsonString|double")
     {
-
-        bound::ReadStatus status;
         bound::JsonString target;
         double value = 0.0;
 
@@ -58,11 +55,11 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         REQUIRE(!bound::read::is_convertable<bound::JsonString, decltype(value)>::value);
         REQUIRE(!bound::read::is_unassignable<bound::JsonString, decltype(value)>::value);
 
-        bound::read::Assign(target, value, status);
+        REQUIRE(bound::read::Assign(target, value));
         REQUIRE(target.value.rfind("0.0", 0) == 0);
 
         value = 23429.1310941;
-        bound::read::Assign(target, value, status);
+        REQUIRE(bound::read::Assign(target, value));
         REQUIRE(target.value.rfind("23429.131", 0) == 0);
     }
 

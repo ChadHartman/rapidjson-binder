@@ -302,7 +302,7 @@ TEST_CASE("Writer Tests", "[writer_tests]")
 
     SECTION("JsonDouble Tests")
     {
-        Convertible<bound::JsonDouble> convertible;
+        Convertible<bound::JsonFloat> convertible;
         convertible.value.value = 33.33;
         REQUIRE("33.33" == bound::write::ToJson(convertible, bound::WriteConfig()));
     }

@@ -93,6 +93,9 @@ private:
             case Event::kTypeEndObject:
                 writer.EndObject();
                 return;
+
+            default:
+                break;
             }
         } while (parser_.FetchNextEvent());
     }
@@ -318,45 +321,55 @@ public:
         // Assignment operations require an lvalue ref
         const static auto null_ptr = nullptr;
 
+        bool assigned = false;
         Prime();
 
         switch (parser_.event().type)
         {
         case Event::kTypeNull:
-            Assign(instance, null_ptr, read_status_);
+            assigned = Assign(instance, null_ptr);
             break;
 
         case Event::kTypeBool:
-            Assign(instance, parser_.event().value.bool_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.bool_value);
             break;
 
         case Event::kTypeInt:
-            Assign(instance, parser_.event().value.int_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.int_value);
             break;
 
         case Event::kTypeUint:
-            Assign(instance, parser_.event().value.unsigned_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.unsigned_value);
             break;
 
         case Event::kTypeInt64:
-            Assign(instance, parser_.event().value.int64_t_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.int64_t_value);
             break;
 
         case Event::kTypeUint64:
-            Assign(instance, parser_.event().value.uint64_t_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.uint64_t_value);
             break;
 
         case Event::kTypeDouble:
-            Assign(instance, parser_.event().value.double_value, read_status_);
+            assigned = Assign(instance, parser_.event().value.double_value);
             break;
 
         case Event::kTypeString:
-            Assign(instance, parser_.event().string_value, read_status_);
+            assigned = Assign(instance, parser_.event().string_value);
             break;
 
         default:
-            read_status_.set_error_message("Invalid read operation=" + parser_.event().ToString());
             break;
+        }
+
+        if (!assigned)
+        {
+            std::string error_message = "Cannot assign type \"";
+            error_message += typeid(instance).name();
+            error_message += "\" with event ";
+            error_message += parser_.event().ToString();
+            error_message += ".";
+            read_status_.set_error_message(error_message);
         }
     }
 };
