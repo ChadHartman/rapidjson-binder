@@ -101,6 +101,17 @@ public:
         bound::property(&User::set_locked, "locked"));
 };
 
+struct DynObject
+{
+
+    std::string name;
+    bound::JsonProperties<bound::JsonRaw> addl_props;
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&DynObject::name, "name"),
+        bound::property(&DynObject::addl_props));
+};
+
 TEST_CASE("Reader Tests", "[reader_tests]")
 {
     SECTION("User creation")
@@ -198,6 +209,35 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         Container item = bound::read::FromJson<Container>("[-1,100]");
         REQUIRE(-1 == item[0]);
         REQUIRE(100 == item[1]);
+    }
+
+    SECTION("vector<map<string, string>>")
+    {
+        using Json = std::vector<std::map<std::string, std::string>>;
+        Json item = bound::read::FromJson<Json>("[{\"foo\":\"bar\"}]");
+        REQUIRE("bar" == item[0]["foo"]);
+    }
+
+    SECTION("DynObject")
+    {
+        DynObject o = bound::read::FromJson<DynObject>(
+            "{"
+            "\"name\":\"John\","
+            "\"hometown\":\"San Diego\","
+            "\"age\":32"
+            "\"aliases\":[\"Johnny\",\"Nathan\"],"
+            "\"demographics\":{"
+            "\"race\":\"purple\""
+            "}"
+            "}");
+
+        printf("%s\n", bound::write::ToJson(o, bound::WriteConfig()).c_str());
+
+        REQUIRE("John" == o.name);
+        REQUIRE("\"San Diego\"" == o.addl_props.at("hometown").value);
+        REQUIRE("32" == o.addl_props.at("age").value);
+        REQUIRE("[\"Johnny\",\"Nathan\"]" == o.addl_props.at("aliases").value);
+        REQUIRE("{\"race\":\"purple\"}" == o.addl_props.at("demographics").value);
     }
 }
 

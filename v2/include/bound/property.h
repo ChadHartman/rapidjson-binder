@@ -44,7 +44,7 @@ struct Property
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
     const bool render_name;
-    const bool is_json_props = is_json_properties<T Class::*>::value;
+    const bool is_json_props = is_json_properties<T>::value;
 };
 
 template <typename Class, typename T>

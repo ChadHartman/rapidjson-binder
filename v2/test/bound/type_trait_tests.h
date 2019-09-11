@@ -8,6 +8,7 @@ namespace bound_type_trait_tests_h_
 
 struct Bound
 {
+    bound::JsonProperties<bound::JsonRaw> addl_props;
     constexpr static auto BOUND_PROPS_NAME = std::make_tuple();
 };
 

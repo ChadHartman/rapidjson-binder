@@ -34,6 +34,8 @@ private:
     // Writer for JsonRaw properties
     void Write(rapidjson::Writer<rapidjson::StringBuffer> &writer)
     {
+        const bool is_simple = parser_.event().IsSimple();
+
         do
         {
             switch (parser_.event().type)
@@ -97,12 +99,25 @@ private:
             default:
                 break;
             }
+
+            if (is_simple)
+            {
+                printf("Is Simple, returning\n");
+                return;
+            }
+            else
+            {
+                printf("Not simple: %s\n", parser_.event().ToString().c_str());
+            }
+
         } while (parser_.FetchNextEvent());
     }
 
     // Recusively skips unmapped sections of json
     void Skip()
     {
+        printf("Skip\n");
+
         if (parser_.event().IsSimple())
         {
             // Skipped
@@ -158,12 +173,37 @@ private:
     }
 
     template <typename T, typename M>
+    typename std::enable_if_t<std::is_member_object_pointer<M>::value>
+    Set(T &instance, std::string &key, M property)
+    {
+        Read(instance.*(property));
+    }
+
+    template <typename T, typename M>
     typename std::enable_if_t<
         !is_setter<M>::value &&
         !std::is_member_object_pointer<M>::value>
     Set(T &instance, M property)
     {
         // Do nothing, needed for compilation
+    }
+
+    template <typename T>
+    void SetProperty(JsonProperties<T> &instance, std::string &key)
+    {
+        T value;
+        Read(value);
+        if (read_status_.success())
+        {
+            instance[key] = value;
+        }
+    }
+
+    template <typename T, typename M>
+    typename std::enable_if_t<is_bound<T>::value && std::is_member_object_pointer<M>::value>
+    SetProperty(T &instance, M member, std::string &key)
+    {
+        SetProperty(instance.*(member), key);
     }
 
     template <typename T>
@@ -178,6 +218,7 @@ private:
                 return;
             }
 
+            printf("Found prop with name \"%s\" \n", key.c_str());
             found = true;
             Set(instance, property.member);
         });
@@ -187,8 +228,8 @@ private:
             ListProperties(instance, [&](auto &property) {
                 if (property.is_json_props)
                 {
+                    SetProperty(instance, property.member, key);
                     found = true;
-                    Set(instance, property.member);
                 }
             });
         }
@@ -199,15 +240,22 @@ private:
         }
     }
 
-    template <typename V>
-    void SetProperty(JsonProperties<V> &instance, std::string &key)
+    template <typename T, typename M>
+    typename std::enable_if_t<
+        !is_bound<T>::value ||
+        !std::is_member_object_pointer<M>::value>
+    SetProperty(T &instance, M member, std::string &key)
     {
-        V value;
-        Read(value);
-        if (read_status_.success())
-        {
-            instance[key] = value;
-        }
+        // Needed for compilation
+    }
+
+    template <typename T>
+    typename std::enable_if_t<
+        !is_bound<T>::value &&
+        !is_json_properties<T>::value>
+    SetProperty(T &instance, std::string &key)
+    {
+        // Needed for compilation
     }
 
     void Prime()
@@ -227,6 +275,8 @@ public:
     typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
     Read(T &instance)
     {
+        printf("Read into map/bound\n");
+
         std::string key;
         bool last_token_was_key = false;
         Event::Type event_type;
@@ -305,10 +355,12 @@ public:
 
     void Read(JsonRaw &instance)
     {
+        printf("Reading raw json...\n");
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         Write(writer);
         instance.value = buffer.GetString();
+        printf("Parsed \"%s\"\n", instance.value.c_str());
     }
 
     template <typename T>
