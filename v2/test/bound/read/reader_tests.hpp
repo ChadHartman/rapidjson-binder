@@ -203,6 +203,14 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         REQUIRE("bar" == item.back());
     }
 
+    SECTION("list<vector<string>>")
+    {
+        using Container = std::list<std::vector<std::string>>;
+        Container item = bound::read::FromJson<Container>("[[\"foo\",\"bar\"]]");
+        REQUIRE("foo" == item.front().front());
+        REQUIRE("bar" == item.front().back());
+    }
+
     SECTION("deque<int>")
     {
         using Container = std::deque<int>;
@@ -230,8 +238,6 @@ TEST_CASE("Reader Tests", "[reader_tests]")
             "\"race\":\"purple\""
             "}"
             "}");
-
-        printf("%s\n", bound::write::ToJson(o, bound::WriteConfig()).c_str());
 
         REQUIRE("John" == o.name);
         REQUIRE("\"San Diego\"" == o.addl_props.at("hometown").value);

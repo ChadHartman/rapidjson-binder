@@ -6,8 +6,13 @@
 * Sequential Containers: `std::vector`, `std::list`, `std::deque` 
 * `std::string`
 * `std::map<std::string, ?>`
+* `class`/`struct` with `constexpr static std::tuple<...> properties` field
 
 ## Property Declaration
+
+### Known Properties
+
+Json properties can be registered in a `constexpr static std::tuple<...> properties` field.  
 
 ```
 struct Parent {
@@ -19,9 +24,16 @@ struct Parent {
 };
 ```
 
+### Dynamic Properties
+
+If a JSON object has a dynamic set of keys with an unknown TODO
+
+Use `std::map<std::string, bound::RawJson>` or if the value type is known: `std::map<std::string, Child>`.
+
+
 ## RawJson
 
-Uses `bound::JsonRaw`
+Class: `bound::JsonRaw`. `bound::JsonRaw.value` is a `std::string` with a json-formatted string for arbitrary structures. 
 
 ### From Parent
 
@@ -111,8 +123,3 @@ struct Child {
 
 Specific values can be filtered out using `bound::WriteConfig`. Alternatively each of the `bound::Json*` types possess a `bool render` field; which when set to `false`, will be skipped.
 
-## Dynamic Key Properties
-
-Properties with unknown keys.
-
-Use `std::map<std::string, bound::RawJson>` or if the value type is known: `std::map<std::string, Child>`.

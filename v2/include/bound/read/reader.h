@@ -35,8 +35,6 @@ private:
     // Recusively skips unmapped sections of json
     void Skip()
     {
-        printf("Skip\n");
-
         if (parser_.event().IsSimple())
         {
             // Skipped
@@ -137,7 +135,6 @@ private:
                 return;
             }
 
-            printf("Found prop with name \"%s\" \n", key.c_str());
             found = true;
             Set(instance, property.member);
         });
@@ -194,8 +191,6 @@ public:
     typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
     Read(T &instance)
     {
-        printf("Read into map/bound\n");
-
         std::string key;
         bool last_token_was_key = false;
         Event::Type event_type;
