@@ -6,6 +6,7 @@
 #include "assign.h"
 #include "../read_status.h"
 #include "../type_traits.h"
+#include "raw_json_reader.h"
 
 namespace bound
 {
@@ -30,88 +31,6 @@ class Reader
 private:
     Parser<Stream> &parser_;
     ReadStatus &read_status_;
-
-    // Writer for JsonRaw properties
-    void Write(rapidjson::Writer<rapidjson::StringBuffer> &writer)
-    {
-        const bool is_simple = parser_.event().IsSimple();
-
-        do
-        {
-            switch (parser_.event().type)
-            {
-            case Event::kTypeNull:
-                writer.Null();
-                break;
-
-            case Event::kTypeBool:
-                writer.Bool(parser_.event().value.bool_value);
-                break;
-
-            case Event::kTypeInt:
-                writer.Int(parser_.event().value.int_value);
-                break;
-
-            case Event::kTypeUint:
-                writer.Uint(parser_.event().value.unsigned_value);
-                break;
-
-            case Event::kTypeInt64:
-                writer.Int64(parser_.event().value.int64_t_value);
-                break;
-
-            case Event::kTypeUint64:
-                writer.Uint64(parser_.event().value.uint64_t_value);
-                break;
-
-            case Event::kTypeDouble:
-                writer.Double(parser_.event().value.double_value);
-                break;
-
-            case Event::kTypeString:
-                writer.String(parser_.event().string_value.c_str());
-                break;
-
-            case Event::kTypeStartObject:
-                writer.StartObject();
-                parser_.FetchNextEvent();
-                Write(writer);
-                return;
-
-            case Event::kTypeKey:
-                writer.Key(parser_.event().string_value.c_str());
-                break;
-
-            case Event::kTypeStartArray:
-                writer.StartArray();
-                parser_.FetchNextEvent();
-                Write(writer);
-                return;
-
-            case Event::kTypeEndArray:
-                writer.EndArray();
-                return;
-
-            case Event::kTypeEndObject:
-                writer.EndObject();
-                return;
-
-            default:
-                break;
-            }
-
-            if (is_simple)
-            {
-                printf("Is Simple, returning\n");
-                return;
-            }
-            else
-            {
-                printf("Not simple: %s\n", parser_.event().ToString().c_str());
-            }
-
-        } while (parser_.FetchNextEvent());
-    }
 
     // Recusively skips unmapped sections of json
     void Skip()
@@ -355,12 +274,7 @@ public:
 
     void Read(JsonRaw &instance)
     {
-        printf("Reading raw json...\n");
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        Write(writer);
-        instance.value = buffer.GetString();
-        printf("Parsed \"%s\"\n", instance.value.c_str());
+        RawJsonReader<Stream>(parser_).Read(instance);
     }
 
     template <typename T>
