@@ -106,7 +106,7 @@ private:
     }
 
     template <typename T>
-    void SetProperty(JsonProperties<T> &instance, std::string &key)
+    void SetProperty(std::map<std::string, T> &instance, std::string &key)
     {
         T value;
         Read(value);

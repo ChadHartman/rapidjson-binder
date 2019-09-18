@@ -35,31 +35,36 @@ namespace bound
 template <typename Class, typename T>
 struct Property
 {
-    constexpr Property(T Class::*member, const char *name, bool render_name)
+    constexpr Property(T Class::*member, const char *name)
         : member{member},
           name{name},
-          render_name{render_name} {}
+          is_json_props{false} {}
+
+    constexpr Property(T Class::*member)
+        : member{member},
+          name{""},
+          is_json_props{true} {}
 
     T Class::*member;
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
-    const bool render_name;
-    const bool is_json_props = is_json_properties<T>::value;
+    const bool is_json_props;
 };
 
 template <typename Class, typename T>
 constexpr auto property(T Class::*member, const char *name)
 {
-    return Property<Class, T>{member, name, true};
+    return Property<Class, T>{member, name};
 }
 
 template <typename Class, typename T>
 constexpr typename std::enable_if<
-    std::is_member_object_pointer<JsonProperties<T> Class::*>::value,
-    Property<Class, JsonProperties<T>>>::type
-property(JsonProperties<T> Class::*member)
+    std::is_member_object_pointer<T Class::*>::value &&
+        is_json_properties<T>::value,
+    Property<Class, T>>::type
+property(T Class::*member)
 {
-    return Property<Class, JsonProperties<T>>{member, "", false};
+    return Property<Class, T>{member};
 }
 
 } // namespace bound

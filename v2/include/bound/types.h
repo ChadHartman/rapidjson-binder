@@ -8,9 +8,6 @@ namespace bound
 {
 
 template <typename T>
-using JsonProperties = std::map<std::string, T>;
-
-template <typename T>
 struct JsonProperty
 {
     using type = T;

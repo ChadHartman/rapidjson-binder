@@ -105,7 +105,7 @@ struct DynObject
 {
 
     std::string name;
-    bound::JsonProperties<bound::JsonRaw> addl_props;
+    std::map<std::string, bound::JsonRaw> addl_props;
 
     constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&DynObject::name, "name"),
@@ -148,8 +148,8 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("Obj with map<string, int>")
     {
-        Foo<bound::JsonProperties<bound::JsonInt>>
-            item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonInt>>>(
+        Foo<std::map<std::string, bound::JsonInt>>
+            item = bound::read::FromJson<Foo<std::map<std::string, bound::JsonInt>>>(
                 "{"
                 "\"alpha\":{\"i\":1},"
                 "\"beta\":{\"i\":2},"
@@ -164,8 +164,8 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("Obj with map<string, json>")
     {
-        Foo<bound::JsonProperties<bound::JsonRaw>>
-            item = bound::read::FromJson<Foo<bound::JsonProperties<bound::JsonRaw>>>(
+        Foo<std::map<std::string, bound::JsonRaw>>
+            item = bound::read::FromJson<Foo<std::map<std::string, bound::JsonRaw>>>(
                 "{"
                 "\"alpha\":{\"i\":{\"value\":1}},"
                 "\"beta\":{\"i\":{\"value\":2}},"

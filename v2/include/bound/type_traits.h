@@ -46,7 +46,7 @@ struct is_json_properties : std::false_type
 };
 
 template <typename V>
-struct is_json_properties<JsonProperties<V>> : std::true_type
+struct is_json_properties<std::map<std::string, V>> : std::true_type
 {
 };
 
