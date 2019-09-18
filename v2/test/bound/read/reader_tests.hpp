@@ -224,7 +224,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
             "{"
             "\"name\":\"John\","
             "\"hometown\":\"San Diego\","
-            "\"age\":32"
+            "\"age\":32,"
             "\"aliases\":[\"Johnny\",\"Nathan\"],"
             "\"demographics\":{"
             "\"race\":\"purple\""
