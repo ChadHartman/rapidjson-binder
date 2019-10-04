@@ -7,18 +7,18 @@
 * `std::string`
 * `std::map<K, V>`
 * `class`/`struct` with `constexpr static std::tuple<...> properties` field
-* bound::JsonFloat
-* bound::JsonBool
-* bound::JsonUint
-* bound::JsonInt
-* bound::JsonString
-* bound::JsonRaw
+* `bound::JsonFloat`
+* `bound::JsonBool`
+* `bound::JsonUint`
+* `bound::JsonInt`
+* `bound::JsonString`
+* `bound::JsonRaw`
 
 ## Property Declaration
 
 ### Known Properties
 
-Json properties can be registered in a `constexpr static std::tuple<...> properties` field:
+JSON properties can be registered in a `constexpr static std::tuple<...> properties` field:
 
 ```
 // Example: {"bar":17}
@@ -37,7 +37,7 @@ struct Foo {
 
 #### Known Value Types
 
-If a JSON object has a dynamic set of keys with known value type `T`, use a `std::map<std::string, T> property:
+If a JSON object has a dynamic set of keys with known value type `T`, use a `std::map<std::string, T>` property:
 
 ```
 // Example: {"bar":17,"unknown_key":18}
@@ -106,7 +106,6 @@ struct Parent {
 ### From Child
 
 ```
-
 struct Child {
 
     operator bound::RawJson() {
