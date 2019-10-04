@@ -5,30 +5,60 @@
 * Arithmetic: `int`, `unsigned`, `long`, `float`, `double`, `bool`, etc
 * Sequential Containers: `std::vector`, `std::list`, `std::deque` 
 * `std::string`
-* `std::map<std::string, ?>`
+* `std::map<K, V>`
 * `class`/`struct` with `constexpr static std::tuple<...> properties` field
 
 ## Property Declaration
 
 ### Known Properties
 
-Json properties can be registered in a `constexpr static std::tuple<...> properties` field.  
+Json properties can be registered in a `constexpr static std::tuple<...> properties` field:
 
 ```
-struct Parent {
-    int property;
+struct Foo {
+    int bar;
 
     constexpr static auto properties = std::make_tuple(
-        bound::property(&Parent::property, "json_name")
+        bound::property(&Foo::bar, "bar")
     );
 };
 ```
 
 ### Dynamic Properties
 
-If a JSON object has a dynamic set of keys with an unknown TODO
+#### Known Value Types
 
-Use `std::map<std::string, bound::RawJson>` or if the value type is known: `std::map<std::string, Child>`.
+If a JSON object has a dynamic set of keys with known value type `T`, use a `std::map<std::string, T> property:
+
+```
+struct Foo {
+    int bar;
+    std::map<std::string, int> addl_props;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Foo::bar, "bar"),
+        bound::property(&Foo::addl_props)
+    );
+};
+```
+
+#### Unnown Value Types
+
+If a JSON object has a dynamic set of keys with an unknown value type, use a `std::map<std::string, bound::JsonRaw>` property:
+
+```
+struct Foo {
+    int bar;
+    std::map<std::string, bound::JsonRaw> addl_props;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Foo::bar, "bar"),
+        bound::property(&Foo::addl_props)
+    );
+};
+```
+
+`bound::JsonRaw`'s `value` field is a JSON-formatted `std::string` of the parsed value.
 
 
 ## RawJson
