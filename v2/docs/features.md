@@ -7,6 +7,12 @@
 * `std::string`
 * `std::map<K, V>`
 * `class`/`struct` with `constexpr static std::tuple<...> properties` field
+* bound::JsonFloat
+* bound::JsonBool
+* bound::JsonUint
+* bound::JsonInt
+* bound::JsonString
+* bound::JsonRaw
 
 ## Property Declaration
 
@@ -15,7 +21,10 @@
 Json properties can be registered in a `constexpr static std::tuple<...> properties` field:
 
 ```
+// Example: {"bar":17}
 struct Foo {
+
+    // Value: 17
     int bar;
 
     constexpr static auto properties = std::make_tuple(
@@ -31,8 +40,14 @@ struct Foo {
 If a JSON object has a dynamic set of keys with known value type `T`, use a `std::map<std::string, T> property:
 
 ```
+// Example: {"bar":17,"unknown_key":18}
 struct Foo {
+
+    // Value: 17
     int bar;
+
+    // Value:
+    //  "unknown_key", 18
     std::map<std::string, int> addl_props;
 
     constexpr static auto properties = std::make_tuple(
@@ -47,8 +62,16 @@ struct Foo {
 If a JSON object has a dynamic set of keys with an unknown value type, use a `std::map<std::string, bound::JsonRaw>` property:
 
 ```
+// Example: {"bar":17,"unknown_key_a":18,"unknown_key_b":[19],"unknown_key_c":"baz"}
 struct Foo {
+
+    // Value: 17
     int bar;
+
+    // Value:
+    //  "unknown_key_a", "18"
+    //  "unknown_key_b", "[19]"
+    //  "unknown_key_c", "\"baz\""
     std::map<std::string, bound::JsonRaw> addl_props;
 
     constexpr static auto properties = std::make_tuple(
@@ -68,8 +91,11 @@ Class: `bound::JsonRaw`. `bound::JsonRaw.value` is a `std::string` with a json-f
 ### From Parent
 
 ```
+// Example: {"json_name":{"some":["dynamic",{"object":"value"}]}}
 struct Parent {
-    RawJson raw_json;
+
+    // Value: "{\"some\":[\"dynamic\",{\"object\":\"value\"}]}"
+    bound::JsonRaw raw_json;
 
     constexpr static auto properties = std::make_tuple(
         bound::property(&Parent::raw_json, "json_name")
@@ -80,12 +106,28 @@ struct Parent {
 ### From Child
 
 ```
+
 struct Child {
 
     operator bound::RawJson() {
         return bound::RawJson("{}");
     }
 
+    Child &operator=(bound::RawJson &value) {
+        return *this;
+    }
+
+};
+
+// Example: {"json_name":["Some", "Value"]}
+struct Parent {
+
+    // Operator called with "[\"Some\", \"Value\"]"
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name")
+    );
 };
 ```
 
@@ -94,10 +136,12 @@ struct Child {
 ### Parent Getter
 
 ```
+// Readonly
+//  Returns {"json_name":"string value"}
 struct Parent {
 
     std::string get() {
-        return "";
+        return "string value";
     }
 
     constexpr static auto properties = std::make_tuple(
@@ -116,6 +160,17 @@ struct Child {
     }
 
 };
+
+// Readonly
+//  Returns {"json_name":"value"}
+struct Parent {
+
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name")
+    );
+};
 ```
 
 ## Setters
@@ -123,8 +178,11 @@ struct Child {
 ### Parent Setter
 
 ```
+// On read returns {}
+// Can be set with: {"json_name":"foo"}
 struct Parent {
 
+    // value = "foo"
     void set(std::string &value) {
         //..
     }
@@ -145,6 +203,19 @@ struct Child {
         //...
         return *this;
     }
+
+};
+
+// On read returns {}
+// Can be set with: {"json_name":"foo"}
+struct Parent {
+
+    // Child's assignment operator will called with "foo"
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name")
+    );
 
 };
 ```
