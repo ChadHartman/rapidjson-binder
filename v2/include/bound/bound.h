@@ -18,23 +18,38 @@
 namespace bound
 {
 
-// template <typename T>
-// void FromJson(const std::string &json, T &object)
-// {
-//     read::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
-// }
+template <typename T>
+void FromJson(const std::string &json, T &object)
+{
+    ReadStatus status;
+    bound::read::FromJson(json, object, status);
+}
 
-// template <typename T>
-// void FromJson(const std::string &&json, T &object)
-// {
-//     return FromJson(json, object);
-// }
+template <typename T>
+void FromJson(const std::string &&json, T &object)
+{
+    FromJson(json, object);
+}
 
-// template <typename T>
-// std::string ToJson(T &object)
-// {
-//     return write::ToJson(object);
-// }
+template <typename T>
+T FromJson(const std::string &json)
+{
+    T instance;
+    FromJson(json, instance);
+    return instance;
+}
+
+template <typename T>
+T FromJson(const std::string &&json)
+{
+    return FromJson<T>(json);
+}
+
+template <typename T>
+std::string ToJson(T &instance)
+{
+    return write::ToJson(instance);
+}
 
 } // namespace bound
 

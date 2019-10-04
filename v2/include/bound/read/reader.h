@@ -336,25 +336,10 @@ public:
 };
 
 template <typename T>
-T FromJson(std::string &json, ReadStatus &read_status)
+void FromJson(const std::string &json, T &instance, ReadStatus &read_status)
 {
-    T instance;
     Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
     Reader<rapidjson::StringStream>{parser, read_status}.Read(instance);
-    return instance;
-}
-
-template <typename T>
-T FromJson(std::string &&json, ReadStatus &read_status)
-{
-    return FromJson<T>(json, read_status);
-}
-
-template <typename T>
-T FromJson(std::string &&json)
-{
-    ReadStatus read_status;
-    return FromJson<T>(json, read_status);
 }
 
 } // namespace read
