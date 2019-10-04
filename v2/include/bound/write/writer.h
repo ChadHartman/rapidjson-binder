@@ -79,14 +79,14 @@ public:
                     return;
                 }
 
-                if (property.render_name)
+                if (property.is_json_props)
                 {
-                    writer_.Key(property.name);
-                    Write(value);
+                    WriteMapContents(value);
                 }
                 else
                 {
-                    WriteMapContents(value);
+                    writer_.Key(property.name);
+                    Write(value);
                 }
             });
         });

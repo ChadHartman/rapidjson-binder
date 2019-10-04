@@ -92,7 +92,7 @@ struct ConstChild
 
 struct DynamicChild
 {
-    bound::JsonProperties<Child<std::string>> props{{{"dynamic", {"Hello, World!"}}}};
+    std::map<std::string, Child<std::string>> props{{{"dynamic", {"Hello, World!"}}}};
 
     constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&DynamicChild::props));

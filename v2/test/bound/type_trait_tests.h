@@ -8,7 +8,7 @@ namespace bound_type_trait_tests_h_
 
 struct Bound
 {
-    bound::JsonProperties<bound::JsonRaw> addl_props;
+    std::map<std::string, bound::JsonRaw> addl_props;
     constexpr static auto BOUND_PROPS_NAME = std::make_tuple();
 };
 
@@ -36,9 +36,9 @@ TEST_CASE("Type Trait Tests", "[type_trait_tests]")
         REQUIRE(!bound::is_bound<std::vector<Bound>>::value);
         REQUIRE(!bound::is_bound<std::vector<Unbound>>::value);
 
-        REQUIRE(!bound::is_bound<bound::JsonProperties<int>>::value);
-        REQUIRE(!bound::is_bound<bound::JsonProperties<Bound>>::value);
-        REQUIRE(!bound::is_bound<bound::JsonProperties<Unbound>>::value);
+        REQUIRE(!bound::is_bound<std::map<std::string, int>>::value);
+        REQUIRE(!bound::is_bound<std::map<std::string, Bound>>::value);
+        REQUIRE(!bound::is_bound<std::map<std::string, Unbound>>::value);
     }
 
     SECTION("is_seq_container")
@@ -51,9 +51,9 @@ TEST_CASE("Type Trait Tests", "[type_trait_tests]")
         REQUIRE(bound::is_seq_container<std::vector<Bound>>::value);
         REQUIRE(bound::is_seq_container<std::deque<Unbound>>::value);
 
-        REQUIRE(!bound::is_seq_container<bound::JsonProperties<int>>::value);
-        REQUIRE(!bound::is_seq_container<bound::JsonProperties<Bound>>::value);
-        REQUIRE(!bound::is_seq_container<bound::JsonProperties<Unbound>>::value);
+        REQUIRE(!bound::is_seq_container<std::map<std::string, int>>::value);
+        REQUIRE(!bound::is_seq_container<std::map<std::string, Bound>>::value);
+        REQUIRE(!bound::is_seq_container<std::map<std::string, Unbound>>::value);
     }
 
     SECTION("is_json_properties")
@@ -66,9 +66,9 @@ TEST_CASE("Type Trait Tests", "[type_trait_tests]")
         REQUIRE(!bound::is_json_properties<std::vector<Bound>>::value);
         REQUIRE(!bound::is_json_properties<std::vector<Unbound>>::value);
 
-        REQUIRE(bound::is_json_properties<bound::JsonProperties<int>>::value);
-        REQUIRE(bound::is_json_properties<bound::JsonProperties<Bound>>::value);
-        REQUIRE(bound::is_json_properties<bound::JsonProperties<Unbound>>::value);
+        REQUIRE(bound::is_json_properties<std::map<std::string, int>>::value);
+        REQUIRE(bound::is_json_properties<std::map<std::string, Bound>>::value);
+        REQUIRE(bound::is_json_properties<std::map<std::string, Unbound>>::value);
     }
 
     SECTION("is_int")
@@ -76,7 +76,7 @@ TEST_CASE("Type Trait Tests", "[type_trait_tests]")
         REQUIRE(!bound::is_int<Bound>::value);
         REQUIRE(!bound::is_int<Unbound>::value);
         REQUIRE(!bound::is_int<std::vector<int>>::value);
-        REQUIRE(!bound::is_int<bound::JsonProperties<int>>::value);
+        REQUIRE(!bound::is_int<std::map<std::string, int>>::value);
         REQUIRE(bound::is_int<int>::value);
         REQUIRE(bound::is_int<char>::value);
         REQUIRE(bound::is_int<long>::value);
@@ -93,7 +93,7 @@ TEST_CASE("Type Trait Tests", "[type_trait_tests]")
         REQUIRE(!bound::is_uint<Bound>::value);
         REQUIRE(!bound::is_uint<Unbound>::value);
         REQUIRE(!bound::is_uint<std::vector<unsigned>>::value);
-        REQUIRE(!bound::is_uint<bound::JsonProperties<unsigned>>::value);
+        REQUIRE(!bound::is_uint<std::map<std::string, unsigned>>::value);
         REQUIRE(!bound::is_uint<int>::value);
         REQUIRE(!bound::is_uint<char>::value);
         REQUIRE(!bound::is_uint<long>::value);
