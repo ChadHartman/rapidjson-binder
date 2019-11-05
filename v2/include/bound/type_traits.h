@@ -96,6 +96,17 @@ struct is_setter<void (Class::*)(T)> : std::true_type
     const static bool arg_is_pointer = std::is_pointer<T>::value;
 };
 
+template <typename T>
+struct is_clearable
+{
+    const static bool value = is_seq_container<T>::value;
+};
+
+template <typename K, typename V>
+struct is_clearable<std::map<K, V>> : std::true_type
+{
+};
+
 } // namespace bound
 
 #endif

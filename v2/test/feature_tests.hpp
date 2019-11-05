@@ -87,7 +87,22 @@ TEST_CASE("Supported Types", "[supported_types]")
         test_seq_container_str<std::deque<std::string>>();
     }
 
-    // * `std::string`
+    SECTION("std::string")
+    {
+        std::string v = "foo";
+        bound::FromJson("\"bar\"", v);
+        REQUIRE(v == "bar");
+    }
+
+    SECTION("std::map<std::string, std::string>")
+    {
+        std::map<std::string, std::string> v = {{"foo", "bar"}};
+        bound::FromJson("{\"alpha\":\"beta\",\"gamma\":\"delta\"}", v);
+        REQUIRE(v.size() == 2);
+        REQUIRE(v["alpha"] == "beta");
+        REQUIRE(v["gamma"] == "delta");
+    }
+
     // * `std::map<K, V>`
     // * `class`/`struct` with `constexpr static std::tuple<...> properties` field
     // * `bound::JsonFloat`

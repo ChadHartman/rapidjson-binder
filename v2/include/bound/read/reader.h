@@ -182,6 +182,19 @@ private:
         }
     }
 
+    template <typename T>
+    inline typename std::enable_if_t<is_clearable<T>::value>
+    Clear(T &container)
+    {
+        container.clear();
+    }
+
+    template <typename T>
+    inline typename std::enable_if_t<!is_clearable<T>::value>
+    Clear(T &container)
+    {
+    }
+
 public:
     Reader(Parser<Stream> &parser, ReadStatus &read_status)
         : parser_{parser},
@@ -196,6 +209,7 @@ public:
         Event::Type event_type;
 
         Prime();
+        Clear(instance);
 
         while (read_status_.success() && parser_.FetchNextEvent())
         {
@@ -243,8 +257,7 @@ public:
         Event::Type event_type;
 
         Prime();
-
-        instance.clear();
+        Clear(instance);
 
         while (read_status_.success() && parser_.FetchNextEvent())
         {
