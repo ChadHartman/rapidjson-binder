@@ -244,6 +244,8 @@ public:
 
         Prime();
 
+        instance.clear();
+
         while (read_status_.success() && parser_.FetchNextEvent())
         {
             event_type = parser_.event().type;

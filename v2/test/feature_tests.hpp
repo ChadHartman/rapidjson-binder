@@ -6,6 +6,24 @@
 namespace test_feature_tests_hpp_supported_types
 {
 
+template <typename T>
+void test_seq_container_int()
+{
+    const static std::string json = "[-1,0,1]";
+    T v = {3, 2, 1};
+    bound::FromJson(json, v);
+    REQUIRE(json == bound::ToJson(v));
+}
+
+template <typename T>
+void test_seq_container_str()
+{
+    const static std::string json = "[\"-1\",\"0\",\"1\"]";
+    T v = {"3", "2", "1"};
+    bound::FromJson(json, v);
+    REQUIRE(json == bound::ToJson(v));
+}
+
 TEST_CASE("Supported Types", "[supported_types]")
 {
 
@@ -51,7 +69,24 @@ TEST_CASE("Supported Types", "[supported_types]")
         REQUIRE(a);
     }
 
-    // * Sequential Containers: `std::vector`, `std::list`, `std::deque`
+    SECTION("std::vector")
+    {
+        test_seq_container_int<std::vector<int>>();
+        test_seq_container_str<std::vector<std::string>>();
+    }
+
+    SECTION("std::list")
+    {
+        test_seq_container_int<std::list<int>>();
+        test_seq_container_str<std::list<std::string>>();
+    }
+
+    SECTION("std::deque")
+    {
+        test_seq_container_int<std::deque<int>>();
+        test_seq_container_str<std::deque<std::string>>();
+    }
+
     // * `std::string`
     // * `std::map<K, V>`
     // * `class`/`struct` with `constexpr static std::tuple<...> properties` field
