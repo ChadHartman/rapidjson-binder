@@ -103,14 +103,73 @@ TEST_CASE("Supported Types", "[supported_types]")
         REQUIRE(v["gamma"] == "delta");
     }
 
-    // * `std::map<K, V>`
-    // * `class`/`struct` with `constexpr static std::tuple<...> properties` field
-    // * `bound::JsonFloat`
-    // * `bound::JsonBool`
-    // * `bound::JsonUint`
-    // * `bound::JsonInt`
-    // * `bound::JsonString`
-    // * `bound::JsonRaw`
+    SECTION("bound::JsonFloat")
+    {
+        bound::JsonFloat v;
+        bound::FromJson("22.22", v);
+        REQUIRE(v.value == 22.22);
+        REQUIRE("22.22" == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE(0.0 == v.value);
+    }
+
+    SECTION("bound::JsonBool")
+    {
+        bound::JsonBool v;
+        bound::FromJson("false", v);
+        REQUIRE(v.value == false);
+        REQUIRE("false" == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE(false == v.value);
+    }
+
+    SECTION("bound::JsonUint")
+    {
+        bound::JsonUint v;
+        bound::FromJson("12345", v);
+        REQUIRE(v.value == 12345);
+        REQUIRE("12345" == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE(0 == v.value);
+    }
+
+    SECTION("bound::JsonInt")
+    {
+        bound::JsonInt v;
+        bound::FromJson("-12345", v);
+        REQUIRE(v.value == -12345);
+        REQUIRE("-12345" == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE(0 == v.value);
+    }
+
+    SECTION("bound::JsonString")
+    {
+        const static std::string value = "\"Hello, world!\"";
+        bound::JsonString v;
+        bound::FromJson(value, v);
+        REQUIRE(v.value == value.substr(1, value.length() - 2));
+        REQUIRE(value == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE("" == v.value);
+    }
+
+    SECTION("bound::JsonRaw")
+    {
+        const static std::string json = "{\"message\":\"hello, world!\"}";
+        bound::JsonRaw v;
+        bound::FromJson(json, v);
+        REQUIRE(v.value == json);
+        REQUIRE(json == bound::ToJson(v));
+
+        bound::FromJson("null", v);
+        REQUIRE("null" == v.value);
+    }
 }
 
 } // namespace test_feature_tests_hpp_supported_types
