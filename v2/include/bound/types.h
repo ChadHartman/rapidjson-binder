@@ -14,7 +14,7 @@ struct JsonProperty
 
     T value;
 
-    JsonProperty<T> &operator=(const std::nullptr_t &new_val)
+    JsonProperty<T> &operator=(const std::nullptr_t new_val)
     {
         value = T();
         return *this;
@@ -48,7 +48,7 @@ struct JsonString
 
     std::string value;
 
-    JsonString &operator=(const std::nullptr_t &new_val)
+    JsonString &operator=(const std::nullptr_t new_val)
     {
         value = "";
         return *this;

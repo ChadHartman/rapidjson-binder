@@ -175,14 +175,22 @@ TEST_CASE("Supported Types", "[supported_types]")
 
     SECTION("bound::JsonRaw")
     {
-        const static std::string json = "{\"message\":\"hello, world!\"}";
         bound::JsonRaw v;
-        bound::FromJson(json, v);
-        REQUIRE(v.value == json);
-        REQUIRE(json == bound::ToJson(v));
 
-        bound::FromJson("null", v);
-        REQUIRE("null" == v.value);
+        auto test = [](bound::JsonRaw &v, std::string &&json) {
+            bound::FromJson(json, v);
+            REQUIRE(json == v.value);
+            REQUIRE(json == bound::ToJson(v));
+        };
+
+        test(v, "{\"message\":\"hello, world!\"}");
+        test(v, "null");
+        test(v, "22.33");
+        test(v, "-11");
+        test(v, "11");
+        test(v, "[11]");
+        test(v, "\"foo\"");
+        test(v, "[\"foo\"]");
     }
 }
 
@@ -218,40 +226,6 @@ TEST_CASE("Property Declaration", "[property_declaration]")
 }
 
 } // namespace test_feature_tests_hpp_supported_types
-
-// ## Property Declaration
-
-// ### Dynamic Properties
-
-// #### Unnown Value Types
-
-// If a JSON object has a dynamic set of keys with an unknown value type, use a `std::map<std::string, bound::JsonRaw>` property:
-
-// ```
-// // Example: {"bar":17,"unknown_key_a":18,"unknown_key_b":[19],"unknown_key_c":"baz"}
-// struct Foo {
-
-//     // Value: 17
-//     int bar;
-
-//     // Value:
-//     //  "unknown_key_a", "18"
-//     //  "unknown_key_b", "[19]"
-//     //  "unknown_key_c", "\"baz\""
-//     std::map<std::string, bound::JsonRaw> addl_props;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Foo::bar, "bar"),
-//         bound::property(&Foo::addl_props)
-//     );
-// };
-// ```
-
-// `bound::JsonRaw`'s `value` field is a JSON-formatted `std::string` of the parsed value.
-
-// ## RawJson
-
-// Class: `bound::JsonRaw`. `bound::JsonRaw.value` is a `std::string` with a json-formatted string for arbitrary structures.
 
 // ### From Parent
 
