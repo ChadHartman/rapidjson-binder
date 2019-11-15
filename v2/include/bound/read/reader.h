@@ -299,8 +299,11 @@ public:
 #endif
         JsonRaw json_raw;
         RawJsonReader<Stream>(parser_).Read(json_raw);
-        bool assigned = Assign(instance, json_raw);
-        // TODO
+        if (!Assign(instance, json_raw))
+        {
+            std::string error_message = "Cannot assign \"" + json_raw.value + "\" to " + typeid(T).name() + ".";
+            read_status_.set_error_message(error_message);
+        }
     }
 
     void Read(JsonRaw &instance)

@@ -35,6 +35,7 @@ private:
     std::string error_message_;
 
 public:
+
     // Whether the read was successful
     bool success() const
     {

@@ -275,135 +275,117 @@ TEST_CASE("Raw Json", "[raw_json]")
         bound::ReadStatus status;
         Parent parent = bound::FromJson<Parent>(json, status);
         bound::JsonRaw child = (bound::JsonRaw)parent.child;
-        printf("Child: \"%s\"\n", bound::ToJson(child).c_str());
         REQUIRE("[\"Some\",\"Value\"]" == child.value);
         REQUIRE(json == bound::ToJson(parent));
     }
-
-    printf("ASSIGNABLE: %s\n", std::is_assignable<Child, bound::JsonRaw>::value ? "true" : "false");
 }
 
 } // namespace raw_json
 
-TEST_CASE("Getter", "[getter]") {}
+namespace getter
+{
+
+struct ParentOnly
+{
+
+    std::string get()
+    {
+        return "string_value";
+    }
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&ParentOnly::get, "json_name"));
+};
+
+struct Child
+{
+    operator bound::JsonString()
+    {
+        return bound::JsonString{"value"};
+    }
+};
+
+struct Parent
+{
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name"));
+};
+
+TEST_CASE("Getter", "[getter]")
+{
+    SECTION("Parent Only")
+    {
+        ParentOnly parent;
+        REQUIRE("{\"json_name\":\"string_value\"}" == bound::ToJson(parent));
+    }
+
+    SECTION("Parent and Child")
+    {
+        Parent parent;
+        REQUIRE("{\"json_name\":\"value\"}" == bound::ToJson(parent));
+    }
+}
+
+} // namespace getter
+
+namespace setter
+{
+
+struct ParentOnly
+{
+    std::string value;
+
+    void set(std::string &s)
+    {
+        value = s;
+    }
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&ParentOnly::set, "json_name"));
+};
+
+struct Child
+{
+
+    std::string value;
+
+    Child &operator=(const std::string &s)
+    {
+        value = s;
+        return *this;
+    }
+};
+
+struct Parent
+{
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name"));
+};
+
+TEST_CASE("Setter", "[setter]")
+{
+    SECTION("Parent only")
+    {
+        std::string json = "{\"json_name\":\"foo\"}";
+        ParentOnly parent = bound::FromJson<ParentOnly>(json);
+        REQUIRE("foo" == parent.value);
+    }
+
+    SECTION("Parent and Child")
+    {
+        std::string json = "{\"json_name\":\"foo\"}";
+        Parent parent = bound::FromJson<Parent>(json);
+        REQUIRE("foo" == parent.child.value);
+    }
+}
+
+} // namespace setter
 
 } // namespace test_feature_tests_hpp_supported_types
-
-// ### From Child
-
-// ```
-// struct Child {
-
-//     operator bound::RawJson() {
-//         return bound::RawJson("{}");
-//     }
-
-//     Child &operator=(bound::RawJson &value) {
-//         return *this;
-//     }
-
-// };
-
-// // Example: {"json_name":["Some", "Value"]}
-// struct Parent {
-
-//     // Operator called with "[\"Some\", \"Value\"]"
-//     Child child;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::child, "json_name")
-//     );
-// };
-// ```
-
-// ## Getters
-
-// ### Parent Getter
-
-// ```
-// // Readonly
-// //  Returns {"json_name":"string value"}
-// struct Parent {
-
-//     std::string get() {
-//         return "string value";
-//     }
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::get, "json_name")
-//     );
-// };
-// ```
-
-// ### Child Getter
-
-// ```
-// struct Child {
-
-//     operator bound::JsonString() {
-//         return bound::JsonString{"value"};
-//     }
-
-// };
-
-// // Readonly
-// //  Returns {"json_name":"value"}
-// struct Parent {
-
-//     Child child;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::child, "json_name")
-//     );
-// };
-// ```
-
-// ## Setters
-
-// ### Parent Setter
-
-// ```
-// // On read returns {}
-// // Can be set with: {"json_name":"foo"}
-// struct Parent {
-
-//     // value = "foo"
-//     void set(std::string &value) {
-//         //..
-//     }
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::set, "json_name")
-//     );
-
-// };
-// ```
-
-// ### Child Setter
-
-// ```
-// struct Child {
-
-//     Child &operator =(const std::string& value) {
-//         //...
-//         return *this;
-//     }
-
-// };
-
-// // On read returns {}
-// // Can be set with: {"json_name":"foo"}
-// struct Parent {
-
-//     // Child's assignment operator will called with "foo"
-//     Child child;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::child, "json_name")
-//     );
-
-// };
-// ```
 
 // ## Conditional Writing
 
