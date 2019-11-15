@@ -8,6 +8,8 @@
 #include "../type_traits.h"
 #include "raw_json_reader.h"
 
+#define BOUND_READ_READER_H_DEBUG
+
 namespace bound
 {
 namespace read
@@ -204,6 +206,9 @@ public:
     typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
     Read(T &instance)
     {
+#ifdef BOUND_READ_READER_H_DEBUG
+        printf("Reader#Read[bound|json_properties]\n");
+#endif
         std::string key;
         bool last_token_was_key = false;
         Event::Type event_type;
@@ -254,6 +259,9 @@ public:
     typename std::enable_if_t<is_seq_container<T>::value>
     Read(T &instance)
     {
+#ifdef BOUND_READ_READER_H_DEBUG
+        printf("Reader#Read[seq_container]\n");
+#endif
         Event::Type event_type;
 
         Prime();
@@ -282,8 +290,24 @@ public:
         }
     }
 
+    template <typename T>
+    std::enable_if_t<std::is_assignable<T, JsonRaw>::value>
+    Read(T &instance)
+    {
+#ifdef BOUND_READ_READER_H_DEBUG
+        printf("Reader#Read[is_assignable:JsonRaw]\n");
+#endif
+        JsonRaw json_raw;
+        RawJsonReader<Stream>(parser_).Read(json_raw);
+        bool assigned = Assign(instance, json_raw);
+        // TODO
+    }
+
     void Read(JsonRaw &instance)
     {
+#ifdef BOUND_READ_READER_H_DEBUG
+        printf("Reader#Read[JsonRaw]\n");
+#endif
         RawJsonReader<Stream>(parser_).Read(instance);
     }
 
@@ -291,9 +315,14 @@ public:
     typename std::enable_if_t<
         !is_bound<T>::value &&
         !is_seq_container<T>::value &&
-        !is_json_properties<T>::value>
+        !is_json_properties<T>::value &&
+        !std::is_same<T, JsonRaw>::value &&
+        !std::is_assignable<T, JsonRaw>::value>
     Read(T &instance)
     {
+#ifdef BOUND_READ_READER_H_DEBUG
+        printf("Reader#Read[!bound&!seq_container&!json_properties]\n");
+#endif
         // Assignment operations require an lvalue ref
         const static auto null_ptr = nullptr;
 

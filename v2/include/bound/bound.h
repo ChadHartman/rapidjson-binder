@@ -18,24 +18,46 @@
 namespace bound
 {
 
+// === Updating existing object, creating status === //
+
 template <typename T>
-void FromJson(const std::string &json, T &object)
+ReadStatus FromJson(const std::string &json, T &object)
 {
     ReadStatus status;
     bound::read::FromJson(json, object, status);
+    return status;
 }
 
 template <typename T>
-void FromJson(const std::string &&json, T &object)
+ReadStatus FromJson(const std::string &&json, T &object)
 {
-    FromJson(json, object);
+    return FromJson(json, object);
 }
+
+// === Creating object, updating status === //
+
+template <typename T>
+T FromJson(const std::string &json, ReadStatus &status)
+{
+    T instance;
+    read::FromJson(json, instance, status);
+    return instance;
+}
+
+template <typename T>
+T FromJson(const std::string &&json, ReadStatus &status)
+{
+    return FromJson<T>(json, status);
+}
+
+// === Creating object, unconcerned with status === //
 
 template <typename T>
 T FromJson(const std::string &json)
 {
     T instance;
-    FromJson(json, instance);
+    ReadStatus status;
+    read::FromJson(json, instance, status);
     return instance;
 }
 

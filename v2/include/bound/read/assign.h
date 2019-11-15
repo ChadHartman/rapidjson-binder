@@ -3,7 +3,7 @@
 
 #include "../type_traits.h"
 
-// #define BOUND_READ_ASSIGN_H_DEBUG
+#define BOUND_READ_ASSIGN_H_DEBUG
 
 namespace bound
 {
@@ -84,7 +84,6 @@ template <typename A, typename B>
 typename std::enable_if<is_unassignable<A, B>::value, bool>::type
 Assign(A &a, B &b)
 {
-    printf("B TYPE: %s\n", typeid(B).name());
 #ifdef BOUND_READ_ASSIGN_H_DEBUG
     printf("Assign[is_unassignable]\n");
 #endif

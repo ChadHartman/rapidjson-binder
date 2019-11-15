@@ -225,22 +225,69 @@ TEST_CASE("Property Declaration", "[property_declaration]")
     }
 }
 
+namespace raw_json
+{
+
+struct Child
+{
+private:
+    std::string raw_json;
+
+public:
+    operator bound::JsonRaw()
+    {
+        bound::JsonRaw raw_json_obj;
+        raw_json_obj.value = raw_json;
+        return raw_json_obj;
+    }
+
+    Child &operator=(const bound::JsonRaw &value)
+    {
+        printf("Setting raw_json with \"%s\".", value.value.c_str());
+        raw_json = value.value;
+        return *this;
+    }
+};
+
+struct Parent
+{
+    // Operator called with "[\"Some\", \"Value\"]"
+    Child child;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Parent::child, "json_name"));
+};
+
+TEST_CASE("Raw Json", "[raw_json]")
+{
+
+    SECTION("From Parent")
+    {
+        const std::string json = "{\"bar\":{\"some\":[\"dynamic\",{\"object\":\"value\"}]}}";
+        Foo<bound::JsonRaw> foo = bound::FromJson<Foo<bound::JsonRaw>>(json);
+        REQUIRE("{\"some\":[\"dynamic\",{\"object\":\"value\"}]}" == foo.bar.value);
+        REQUIRE(json == bound::ToJson(foo));
+    }
+
+    SECTION("From Child")
+    {
+        const std::string json = "{\"json_name\":[\"Some\",\"Value\"]}";
+        bound::ReadStatus status;
+        Parent parent = bound::FromJson<Parent>(json, status);
+        bound::JsonRaw child = (bound::JsonRaw)parent.child;
+        printf("Child: \"%s\"\n", bound::ToJson(child).c_str());
+        REQUIRE("[\"Some\",\"Value\"]" == child.value);
+        REQUIRE(json == bound::ToJson(parent));
+    }
+
+    printf("ASSIGNABLE: %s\n", std::is_assignable<Child, bound::JsonRaw>::value ? "true" : "false");
+}
+
+} // namespace raw_json
+
+TEST_CASE("Getter", "[getter]") {}
+
 } // namespace test_feature_tests_hpp_supported_types
-
-// ### From Parent
-
-// ```
-// // Example: {"json_name":{"some":["dynamic",{"object":"value"}]}}
-// struct Parent {
-
-//     // Value: "{\"some\":[\"dynamic\",{\"object\":\"value\"}]}"
-//     bound::JsonRaw raw_json;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Parent::raw_json, "json_name")
-//     );
-// };
-// ```
 
 // ### From Child
 

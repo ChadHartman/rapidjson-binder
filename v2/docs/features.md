@@ -92,7 +92,7 @@ struct Foo {
 `bound::JsonRaw`'s `value` field is a JSON-formatted `std::string` of the parsed value.
 
 
-## RawJson
+## Raw Json
 
 Class: `bound::JsonRaw`. `bound::JsonRaw.value` is a `std::string` with a json-formatted string for arbitrary structures. 
 
@@ -116,11 +116,11 @@ struct Parent {
 ```
 struct Child {
 
-    operator bound::RawJson() {
-        return bound::RawJson("{}");
+    operator bound::JsonRaw() {
+        return bound::JsonRaw("{}");
     }
 
-    Child &operator=(bound::RawJson &value) {
+    Child &operator=(bound::JsonRaw &value) {
         return *this;
     }
 
