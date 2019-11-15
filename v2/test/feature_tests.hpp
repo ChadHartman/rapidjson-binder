@@ -7,6 +7,15 @@ namespace test_feature_tests_hpp_supported_types
 {
 
 template <typename T>
+struct Foo
+{
+    T bar;
+
+    constexpr static auto properties = std::make_tuple(
+        bound::property(&Foo::bar, "bar"));
+};
+
+template <typename T>
 void test_seq_container_int()
 {
     const static std::string json = "[-1,0,1]";
@@ -175,26 +184,18 @@ TEST_CASE("Supported Types", "[supported_types]")
     }
 }
 
+TEST_CASE("Property Declaration", "[property_declaration]")
+{
+    SECTION("Known Properties")
+    {
+        Foo<int> foo = bound::FromJson<Foo<int>>("{\"bar\":17}");
+        REQUIRE(17 == foo.bar);
+    }
+}
+
 } // namespace test_feature_tests_hpp_supported_types
 
 // ## Property Declaration
-
-// ### Known Properties
-
-// JSON properties can be registered in a `constexpr static std::tuple<...> properties` field:
-
-// ```
-// // Example: {"bar":17}
-// struct Foo {
-
-//     // Value: 17
-//     int bar;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Foo::bar, "bar")
-//     );
-// };
-// ```
 
 // ### Dynamic Properties
 
