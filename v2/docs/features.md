@@ -1,15 +1,23 @@
 # Features
 
+## Design philosophy
+
+Translate JSON object paradigms to c++ paradigms.
+
+TODO
+
 ## Supported Types
 
 * Arithmetic: `int`, `unsigned`, `long`, `float`, `double`, `bool`, etc
 * Sequential Containers: `std::vector`, `std::list`, `std::deque` 
+    * When parsed, the container is cleared first
 * `std::string`
 * `std::map<K, V>`
+    * When parsed, the container is cleared first
 * `std::nullptr_t`
     * When a pointer is set, it is set with `nullptr`
     * When a stack instance is set, it's default constructor is called
-* `class`/`struct` with `constexpr static std::tuple<...> properties` field
+* `class`/`struct` with `constexpr static std::tuple<...> properties` field and a default constructor
 * `bound::JsonFloat`
 * `bound::JsonBool`
 * `bound::JsonUint`

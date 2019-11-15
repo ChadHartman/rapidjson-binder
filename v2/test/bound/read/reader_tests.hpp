@@ -116,7 +116,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 {
     SECTION("User creation")
     {
-        User user = bound::read::FromJson<User>(
+        User user = bound::FromJson<User>(
             "{\"info\":{\"name\":\"alpha\"},"
             "\"birthdate\":17,"
             "\"aliases\":[\"beta\",\"gamma\"],"
@@ -133,7 +133,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("Obj with ints")
     {
-        Foo<int> item = bound::read::FromJson<Foo<int>>(
+        Foo<int> item = bound::FromJson<Foo<int>>(
             "{"
             "\"alpha\":1,"
             "\"beta\":2,"
@@ -149,7 +149,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("Obj with map<string, int>")
     {
         Foo<std::map<std::string, bound::JsonInt>>
-            item = bound::read::FromJson<Foo<std::map<std::string, bound::JsonInt>>>(
+            item = bound::FromJson<Foo<std::map<std::string, bound::JsonInt>>>(
                 "{"
                 "\"alpha\":{\"i\":1},"
                 "\"beta\":{\"i\":2},"
@@ -165,7 +165,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("Obj with map<string, json>")
     {
         Foo<std::map<std::string, bound::JsonRaw>>
-            item = bound::read::FromJson<Foo<std::map<std::string, bound::JsonRaw>>>(
+            item = bound::FromJson<Foo<std::map<std::string, bound::JsonRaw>>>(
                 "{"
                 "\"alpha\":{\"i\":{\"value\":1}},"
                 "\"beta\":{\"i\":{\"value\":2}},"
@@ -180,25 +180,25 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("int")
     {
-        REQUIRE(1 == bound::read::FromJson<int>("1"));
+        REQUIRE(1 == bound::FromJson<int>("1"));
     }
 
     SECTION("string")
     {
-        REQUIRE("value" == bound::read::FromJson<std::string>("\"value\""));
+        REQUIRE("value" == bound::FromJson<std::string>("\"value\""));
     }
 
     SECTION("map<string, string>")
     {
         using Json = std::map<std::string, std::string>;
-        Json item = bound::read::FromJson<Json>("{\"foo\":\"value\"}");
+        Json item = bound::FromJson<Json>("{\"foo\":\"value\"}");
         REQUIRE("value" == item.at("foo"));
     }
 
     SECTION("list<string>")
     {
         using Container = std::list<std::string>;
-        Container item = bound::read::FromJson<Container>("[\"foo\",\"bar\"]");
+        Container item = bound::FromJson<Container>("[\"foo\",\"bar\"]");
         REQUIRE("foo" == item.front());
         REQUIRE("bar" == item.back());
     }
@@ -206,7 +206,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("list<vector<string>>")
     {
         using Container = std::list<std::vector<std::string>>;
-        Container item = bound::read::FromJson<Container>("[[\"foo\",\"bar\"]]");
+        Container item = bound::FromJson<Container>("[[\"foo\",\"bar\"]]");
         REQUIRE("foo" == item.front().front());
         REQUIRE("bar" == item.front().back());
     }
@@ -214,7 +214,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("deque<int>")
     {
         using Container = std::deque<int>;
-        Container item = bound::read::FromJson<Container>("[-1,100]");
+        Container item = bound::FromJson<Container>("[-1,100]");
         REQUIRE(-1 == item[0]);
         REQUIRE(100 == item[1]);
     }
@@ -222,13 +222,13 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("vector<map<string, string>>")
     {
         using Json = std::vector<std::map<std::string, std::string>>;
-        Json item = bound::read::FromJson<Json>("[{\"foo\":\"bar\"}]");
+        Json item = bound::FromJson<Json>("[{\"foo\":\"bar\"}]");
         REQUIRE("bar" == item[0]["foo"]);
     }
 
     SECTION("DynObject")
     {
-        DynObject o = bound::read::FromJson<DynObject>(
+        DynObject o = bound::FromJson<DynObject>(
             "{"
             "\"name\":\"John\","
             "\"hometown\":\"San Diego\","
