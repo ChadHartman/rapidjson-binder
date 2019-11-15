@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 #include <rapidjson/filewritestream.h>
 
 #include "../property_iterator.h"
@@ -31,10 +31,10 @@ namespace bound
 namespace write
 {
 
-template <class Stream>
+template <typename W>
 class Writer
 {
-    rapidjson::Writer<Stream> &writer_;
+    W &writer_;
     Scanner scanner_;
 
     template <typename T>
@@ -58,7 +58,7 @@ class Writer
     }
 
 public:
-    Writer(rapidjson::Writer<Stream> &writer, const WriteConfig &write_config)
+    Writer(W &writer, const WriteConfig &write_config)
         : writer_{writer}, scanner_{write_config} {}
     Writer(const Writer &) = delete;
     Writer(const Writer &&) = delete;
@@ -69,7 +69,6 @@ public:
     typename std::enable_if_t<is_bound<T>::value>
     Write(T &object)
     {
-
         writer_.StartObject();
 
         ListProperties(object, [&](auto property) {
@@ -200,13 +199,30 @@ public:
     }
 };
 
+template <typename Stream, typename T>
+inline void Write(Stream &writer, T &instance, const WriteConfig &write_config)
+{
+    writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
+    Writer<decltype(writer)>(writer, write_config).Write(instance);
+}
+
 template <typename T>
 std::string ToJson(T &instance, const WriteConfig &write_config)
 {
     rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
-    Writer<rapidjson::StringBuffer>(writer, write_config).Write(instance);
+
+    if (write_config.HasPrefix())
+    {
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        writer.SetIndent(write_config.GetPrefix()[0], write_config.GetPrefix().length());
+        Write(writer, instance, write_config);
+    }
+    else
+    {
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        Write(writer, instance, write_config);
+    }
+
     return buffer.GetString();
 }
 
@@ -220,18 +236,28 @@ template <typename T>
 bool ToJsonFile(T &instance, const std::string &&filename, const WriteConfig &&write_config)
 {
     FILE *fp = fopen(filename.c_str(), BOUND_BOUND_H_WRITE_MODE);
-    if (fp)
+    if (!fp)
     {
-        char write_buffer[BOUND_FILE_WRITE_BUFFER_SIZE];
-        rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
-        rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
-        writer.SetMaxDecimalPlaces(write_config.GetMaxDecimalPlaces());
-        Writer<rapidjson::FileWriteStream>(writer, write_config).Write(instance);
-        fclose(fp);
-        return true;
+        return false;
     }
 
-    return false;
+    char buffer[BOUND_FILE_WRITE_BUFFER_SIZE];
+    rapidjson::FileWriteStream os(fp, buffer, sizeof(buffer));
+
+    if (write_config.HasPrefix())
+    {
+        rapidjson::PrettyWriter<decltype(os)> writer(os);
+        writer.SetIndent(write_config.GetPrefix()[0], write_config.GetPrefix().length());
+        Write(writer, instance, write_config);
+    }
+    else
+    {
+        rapidjson::Writer<decltype(os)> writer(os);
+        Write(writer, instance, write_config);
+    }
+
+    fclose(fp);
+    return true;
 }
 
 } // namespace write

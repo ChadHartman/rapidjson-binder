@@ -385,6 +385,26 @@ TEST_CASE("Setter", "[setter]")
 
 } // namespace setter
 
+TEST_CASE("Conditional Writing", "[conditional_writing]")
+{
+    SECTION("Whitespace")
+    {
+        bound::WriteConfig write_config;
+        std::map<std::string, std::string> json = {{"message", "Hello, World!"}, {"foo", "bar"}};
+        REQUIRE("{\n"
+                "  \"foo\": \"bar\",\n"
+                "  \"message\": \"Hello, World!\"\n"
+                "}" == bound::ToJson(json, write_config.SetPrefix("  ")));
+    }
+
+    SECTION("Dec spaces")
+    {
+        bound::WriteConfig write_config;
+        std::map<std::string, double> json = {{"alpha", 22.2222}, {"beta", -33.3333}};
+        REQUIRE("{\"alpha\":22.22,\"beta\":-33.33}" == bound::ToJson(json, write_config.SetMaxDecimalPlaces(2)));
+    }
+}
+
 } // namespace test_feature_tests_hpp_supported_types
 
 // ## Conditional Writing

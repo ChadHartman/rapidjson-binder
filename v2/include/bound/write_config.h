@@ -62,6 +62,7 @@ private:
     bool filter_null_pointers_ = false;
     bool filter_empty_arrays_ = false;
     bool filter_empty_objects_ = false;
+    std::string prefix_;
 
 public:
     bool IsFilteringNullPointers() const
@@ -117,9 +118,19 @@ public:
         return string_filter_.enabled && string_filter_.value == value;
     }
 
+    bool HasPrefix() const
+    {
+        return prefix_.length() > 0;
+    }
+
     int GetMaxDecimalPlaces() const
     {
         return max_dec_places_;
+    }
+
+    const std::string &GetPrefix() const
+    {
+        return prefix_;
     }
 
     WriteConfig &SetMaxDecimalPlaces(int max_dec_places)
@@ -215,6 +226,17 @@ public:
         FilterEmptyObjects();
         FilterEmptyStrings();
         return *this;
+    }
+
+    WriteConfig &SetPrefix(std::string &prefix)
+    {
+        prefix_ = prefix;
+        return *this;
+    }
+
+    WriteConfig &SetPrefix(std::string &&prefix)
+    {
+        return SetPrefix(prefix);
     }
 
     constexpr static auto properties = std::make_tuple(

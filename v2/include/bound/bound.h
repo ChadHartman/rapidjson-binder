@@ -68,9 +68,21 @@ T FromJson(const std::string &&json)
 }
 
 template <typename T>
+inline std::string ToJson(T &instance, WriteConfig &write_config)
+{
+    return write::ToJson(instance, write_config);
+}
+
+template <typename T>
+inline std::string ToJson(T &instance, WriteConfig &&write_config)
+{
+    return ToJson(instance, write_config);
+}
+
+template <typename T>
 std::string ToJson(T &instance)
 {
-    return write::ToJson(instance, WriteConfig());
+    return ToJson(instance, WriteConfig());
 }
 
 } // namespace bound
