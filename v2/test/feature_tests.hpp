@@ -196,12 +196,23 @@ TEST_CASE("Property Declaration", "[property_declaration]")
         REQUIRE(json == bound::ToJson(foo));
     }
 
-    SECTION("Dynamic Properties[Known Value]")
+    SECTION("Dynamic Properties[Known Value Types]")
     {
         const std::string json = "{\"bar\":17,\"unknown_key\":18}";
         Foo<int, int> foo = bound::FromJson<Foo<int, int>>(json);
         REQUIRE(17 == foo.bar);
         REQUIRE(18 == foo.addl_props["unknown_key"]);
+        REQUIRE(json == bound::ToJson(foo));
+    }
+
+    SECTION("Dynamic Properties[Unnown Value Types]")
+    {
+        const std::string json = "{\"bar\":17,\"unknown_key_a\":18,\"unknown_key_b\":[19],\"unknown_key_c\":\"baz\"}";
+        Foo<int> foo = bound::FromJson<Foo<int>>(json);
+        REQUIRE(17 == foo.bar);
+        REQUIRE("18" == foo.addl_props["unknown_key_a"].value);
+        REQUIRE("[19]" == foo.addl_props["unknown_key_b"].value);
+        REQUIRE("\"baz\"" == foo.addl_props["unknown_key_c"].value);
         REQUIRE(json == bound::ToJson(foo));
     }
 }
