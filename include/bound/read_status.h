@@ -35,7 +35,6 @@ private:
     std::string error_message_;
 
 public:
-
     // Whether the read was successful
     bool success() const
     {
@@ -49,23 +48,20 @@ public:
     }
 
     // The error message setter
-    void set_error_message(std::string error_message)
+    void set_error_message(std::string &error_message)
     {
         error_message_ = error_message;
     }
 
-    std::string ToString() const
+    // The error message setter
+    void set_error_message(std::string &&error_message)
     {
-        if (success())
-        {
-            return "{\"success\":true}";
-        }
-
-        return "{\"success\":false,\"error_message\":\"" +
-               //  TODO: escape quotes
-               error_message_ +
-               "\"}";
+        error_message_ = error_message;
     }
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        property(&ReadStatus::success, "success"),
+        property(&ReadStatus::error_message_, "error_message"));
 };
 
 } // namespace bound

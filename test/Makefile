@@ -1,8 +1,8 @@
 INCLUDES=\
 	-I. \
 	-I../include \
-	-I../../libs/rapidjson/include \
-	-I../../libs/Catch2/single_include
+	-I../libs/rapidjson/include \
+	-I../libs/Catch2/single_include
 
 catch_main.o: catch_main.cpp
 	g++ catch_main.cpp -c -std=c++14 -Wall $(INCLUDES) 

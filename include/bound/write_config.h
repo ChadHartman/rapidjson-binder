@@ -21,13 +21,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef BOUND_WRITE_CONFIG_H_
 #define BOUND_WRITE_CONFIG_H_
-
-//#define BOUND_WRITE_CONFIG_H_DEBUG
+// #define BOUND_WRITE_CONFIG_H_DEBUG
 
 #include <string>
 #include <cmath>
 
-#include "util.h"
+#include "rapidjson/writer.h"
+
+#include "property.h"
+#include "type_traits.h"
 
 namespace bound
 {
@@ -56,10 +58,18 @@ private:
     PropertyFilter<double> float_filter_{false, 0.0};
     PropertyFilter<std::string> string_filter_{false, ""};
 
+    int max_dec_places_ = 324; // rapidjson default
+    bool filter_null_pointers_ = false;
     bool filter_empty_arrays_ = false;
     bool filter_empty_objects_ = false;
+    std::string prefix_;
 
 public:
+    bool IsFilteringNullPointers() const
+    {
+        return filter_null_pointers_;
+    }
+
     bool IsFilteringEmptyArrays() const
     {
         return filter_empty_arrays_;
@@ -70,118 +80,163 @@ public:
         return filter_empty_objects_;
     }
 
-    bool IsFiltered(bool value) const
+    bool IsFiltered(const bool &value) const
     {
-        return bool_filter_.enabled && bool_filter_.value == value;
+        bool is_filtered = bool_filter_.enabled && bool_filter_.value == value;
+#ifdef BOUND_WRITE_CONFIG_H_DEBUG
+        printf("Is bool %s filtered? %s\n",
+               value ? "true" : "false",
+               is_filtered ? "true" : "false");
+#endif
+        return is_filtered;
     }
 
     template <typename T>
-    typename std::enable_if<util::is_integer<T>::value, bool>::type
-    IsFiltered(T value) const
+    typename std::enable_if<is_int<T>::value, bool>::type
+    IsFiltered(const T &value) const
     {
         return int_filter_.enabled && int_filter_.value == value;
     }
 
     template <typename T>
-    typename std::enable_if<util::is_unsigned_integer<T>::value, bool>::type
-    IsFiltered(T value) const
+    typename std::enable_if<is_uint<T>::value, bool>::type
+    IsFiltered(const T &value) const
     {
         return uint_filter_.enabled && uint_filter_.value == value;
     }
 
     template <typename T>
     typename std::enable_if<std::is_floating_point<T>::value, bool>::type
-    IsFiltered(T value) const
+    IsFiltered(const T &value) const
     {
         return float_filter_.enabled &&
                fabs(value - float_filter_.value) < std::numeric_limits<T>::epsilon();
     }
 
-    template <typename T>
-    typename std::enable_if<std::is_same<typename std::remove_reference<T>::type, std::string>::value, bool>::type
-    IsFiltered(T value) const
+    bool IsFiltered(const std::string &value) const
     {
         return string_filter_.enabled && string_filter_.value == value;
     }
 
-    void Filter(bool value)
+    bool HasPrefix() const
+    {
+        return prefix_.length() > 0;
+    }
+
+    int GetMaxDecimalPlaces() const
+    {
+        return max_dec_places_;
+    }
+
+    const std::string &GetPrefix() const
+    {
+        return prefix_;
+    }
+
+    WriteConfig &SetMaxDecimalPlaces(int max_dec_places)
+    {
+        max_dec_places_ = max_dec_places;
+        return *this;
+    }
+
+    WriteConfig &Filter(bool value)
     {
         bool_filter_.enabled = true;
         bool_filter_.value = value;
+        return *this;
     }
 
-    void Filter(const char *value)
+    WriteConfig &Filter(const char *value)
     {
         string_filter_.enabled = true;
         string_filter_.value = value;
+        return *this;
+    }
+
+    WriteConfig &Filter(std::string &&value)
+    {
+        string_filter_.enabled = true;
+        string_filter_.value = value;
+        return *this;
     }
 
     template <typename T>
-    typename std::enable_if_t<util::is_integer<T>::value>
+    typename std::enable_if<is_int<T>::value, WriteConfig &>::type
     Filter(T value)
     {
         int_filter_.enabled = true;
         int_filter_.value = static_cast<decltype(int_filter_)::type>(value);
+        return *this;
     }
 
     template <typename T>
-    typename std::enable_if_t<util::is_unsigned_integer<T>::value>
+    typename std::enable_if<is_uint<T>::value, WriteConfig &>::type
     Filter(T value)
     {
         uint_filter_.enabled = true;
         uint_filter_.value = static_cast<decltype(uint_filter_)::type>(value);
+        return *this;
     }
 
     template <typename T>
-    typename std::enable_if_t<std::is_floating_point<T>::value>
+    typename std::enable_if<std::is_floating_point<T>::value, WriteConfig &>::type
     Filter(T value)
     {
         float_filter_.enabled = true;
         float_filter_.value = static_cast<decltype(float_filter_)::type>(value);
+        return *this;
     }
 
-    void Filter(std::string value)
+    WriteConfig &FilterZeroNumbers()
     {
-        string_filter_.enabled = true;
-        string_filter_.value = value;
-    }
-
-    void FilterZeroNumbers()
-    {
-        printf("<int>\n");
         Filter(0);
-        printf("</int>\n<uint>\n");
         Filter(0u);
-        printf("</uint>\n<double>\n");
         Filter(0.0);
-        printf("</double>\n");
+        return *this;
     }
 
-    void FilterEmptyStrings()
+    WriteConfig &FilterNullPointers()
+    {
+        filter_null_pointers_ = true;
+        return *this;
+    }
+
+    WriteConfig &FilterEmptyStrings()
     {
         Filter("");
+        return *this;
     }
 
-    void FilterEmptyArrays()
+    WriteConfig &FilterEmptyArrays()
     {
         filter_empty_arrays_ = true;
+        return *this;
     }
 
-    void FilterEmptyObjects()
+    WriteConfig &FilterEmptyObjects()
     {
         filter_empty_objects_ = true;
+        return *this;
     }
 
-    void FilterEmptiesAndZeroes()
+    WriteConfig &FilterEmptiesAndZeroes()
     {
         FilterZeroNumbers();
-        printf("FilterEmptyArrays\n");
         FilterEmptyArrays();
-        printf("FilterEmptyObjects\n");
         FilterEmptyObjects();
-        printf("FilterEmptyStrings\n");
         FilterEmptyStrings();
-        printf("/FilterEmptyStrings\n");
+        return *this;
+    }
+
+    WriteConfig &SetPrefix(std::string &prefix)
+    {
+        prefix_ = prefix;
+        return *this;
+    }
+
+    WriteConfig &SetPrefix(std::string &&prefix)
+    {
+        return SetPrefix(prefix);
     }
 
     constexpr static auto properties = std::make_tuple(
@@ -190,6 +245,7 @@ public:
         property(&WriteConfig::int_filter_, "int_filter"),
         property(&WriteConfig::float_filter_, "float_filter"),
         property(&WriteConfig::string_filter_, "string_filter"),
+        property(&WriteConfig::filter_null_pointers_, "filter_null_pointers"),
         property(&WriteConfig::filter_empty_arrays_, "filter_empty_arrays_flag"),
         property(&WriteConfig::filter_empty_objects_, "filter_empty_objects_flag"));
 };
