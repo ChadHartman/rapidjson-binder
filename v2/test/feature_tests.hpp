@@ -6,13 +6,15 @@
 namespace test_feature_tests_hpp_supported_types
 {
 
-template <typename T>
+template <typename F, typename V = bound::JsonRaw>
 struct Foo
 {
-    T bar;
+    F bar;
+    std::map<std::string, V> addl_props;
 
     constexpr static auto properties = std::make_tuple(
-        bound::property(&Foo::bar, "bar"));
+        bound::property(&Foo::bar, "bar"),
+        bound::property(&Foo::addl_props));
 };
 
 template <typename T>
@@ -188,8 +190,19 @@ TEST_CASE("Property Declaration", "[property_declaration]")
 {
     SECTION("Known Properties")
     {
-        Foo<int> foo = bound::FromJson<Foo<int>>("{\"bar\":17}");
+        const std::string json = "{\"bar\":17}";
+        Foo<int> foo = bound::FromJson<Foo<int>>(json);
         REQUIRE(17 == foo.bar);
+        REQUIRE(json == bound::ToJson(foo));
+    }
+
+    SECTION("Dynamic Properties[Known Value]")
+    {
+        const std::string json = "{\"bar\":17,\"unknown_key\":18}";
+        Foo<int, int> foo = bound::FromJson<Foo<int, int>>(json);
+        REQUIRE(17 == foo.bar);
+        REQUIRE(18 == foo.addl_props["unknown_key"]);
+        REQUIRE(json == bound::ToJson(foo));
     }
 }
 
@@ -198,28 +211,6 @@ TEST_CASE("Property Declaration", "[property_declaration]")
 // ## Property Declaration
 
 // ### Dynamic Properties
-
-// #### Known Value Types
-
-// If a JSON object has a dynamic set of keys with known value type `T`, use a `std::map<std::string, T>` property:
-
-// ```
-// // Example: {"bar":17,"unknown_key":18}
-// struct Foo {
-
-//     // Value: 17
-//     int bar;
-
-//     // Value:
-//     //  "unknown_key", 18
-//     std::map<std::string, int> addl_props;
-
-//     constexpr static auto properties = std::make_tuple(
-//         bound::property(&Foo::bar, "bar"),
-//         bound::property(&Foo::addl_props)
-//     );
-// };
-// ```
 
 // #### Unnown Value Types
 
