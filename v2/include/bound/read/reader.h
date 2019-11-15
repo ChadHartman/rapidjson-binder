@@ -304,6 +304,7 @@ public:
         {
         case Event::kTypeNull:
             assigned = Assign(instance, null_ptr);
+            printf("Parse null success: %s\n", assigned ? "true" : "false");
             break;
 
         case Event::kTypeBool:

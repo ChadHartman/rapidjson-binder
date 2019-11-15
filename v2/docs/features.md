@@ -6,6 +6,9 @@
 * Sequential Containers: `std::vector`, `std::list`, `std::deque` 
 * `std::string`
 * `std::map<K, V>`
+* `std::nullptr_t`
+    * When a pointer is set, it is set with `nullptr`
+    * When a stack instance is set, it's default constructor is called
 * `class`/`struct` with `constexpr static std::tuple<...> properties` field
 * `bound::JsonFloat`
 * `bound::JsonBool`

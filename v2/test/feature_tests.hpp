@@ -32,6 +32,9 @@ TEST_CASE("Supported Types", "[supported_types]")
         int a;
         bound::FromJson("17", a);
         REQUIRE(17 == a);
+
+        bound::FromJson("null", a);
+        REQUIRE(0 == a);
     }
 
     SECTION("unsigned")
