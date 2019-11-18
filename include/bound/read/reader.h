@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../type_traits.h"
 #include "raw_json_reader.h"
 
-#define BOUND_READ_READER_H_DEBUG
+// #define BOUND_READ_READER_H_DEBUG
 
 namespace bound
 {

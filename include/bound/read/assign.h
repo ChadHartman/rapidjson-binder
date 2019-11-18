@@ -24,7 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../type_traits.h"
 
-#define BOUND_READ_ASSIGN_H_DEBUG
+// #define BOUND_READ_ASSIGN_H_DEBUG
 
 namespace bound
 {
