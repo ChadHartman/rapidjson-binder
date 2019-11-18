@@ -12,7 +12,7 @@ struct Bar
     std::vector<int> v;
     int i = 0;
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Bar::s, "string"),
         bound::property(&Bar::v, "array"),
         bound::property(&Bar::i, "integer"));
@@ -34,7 +34,7 @@ public:
         bar_ = bar;
     }
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Foo::bar_, "bar_property"),
         bound::property(&Foo::bar, "bar"),
         bound::property(&Foo::set_bar, "bar"));

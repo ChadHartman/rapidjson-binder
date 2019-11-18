@@ -107,7 +107,8 @@ template <typename T>
 T FromJson(const std::string &json)
 {
     T instance;
-    read::FromJson(json, instance, ReadStatus());
+    ReadStatus status;
+    read::FromJson(json, instance, status);
     return instance;
 }
 

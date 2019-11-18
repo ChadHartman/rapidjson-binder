@@ -12,7 +12,7 @@ struct Foo
     F bar;
     std::map<std::string, V> addl_props;
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Foo::bar, "bar"),
         bound::property(&Foo::addl_props));
 };
@@ -254,7 +254,7 @@ struct Parent
     // Operator called with "[\"Some\", \"Value\"]"
     Child child;
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Parent::child, "json_name"));
 };
 
@@ -293,7 +293,7 @@ struct ParentOnly
         return "string_value";
     }
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&ParentOnly::get, "json_name"));
 };
 
@@ -309,7 +309,7 @@ struct Parent
 {
     Child child;
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Parent::child, "json_name"));
 };
 
@@ -342,7 +342,7 @@ struct ParentOnly
         value = s;
     }
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&ParentOnly::set, "json_name"));
 };
 
@@ -362,7 +362,7 @@ struct Parent
 {
     Child child;
 
-    constexpr static auto properties = std::make_tuple(
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
         bound::property(&Parent::child, "json_name"));
 };
 
