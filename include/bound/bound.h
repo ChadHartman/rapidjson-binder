@@ -47,10 +47,16 @@ struct CreateStatus
     const std::string error_message;
 };
 
+struct UpdateStatus
+{
+    const bool success;
+    const std::string error_message;
+};
+
 template <typename T>
 CreateStatus<T> CreateWithJson(const std::string &json)
 {
-    ReadStatus status;
+    read::ReadStatus status;
     T instance;
     bound::read::FromJson(json, instance, status);
     return CreateStatus<T>{instance, status.success(), status.error_message()};
@@ -63,27 +69,27 @@ inline CreateStatus<T> CreateWithJson(const std::string &&json)
 }
 
 template <typename T>
-ReadStatus UpdateWithJson(T &instance, const std::string &json)
+UpdateStatus UpdateWithJson(T &instance, const std::string &json)
 {
-    ReadStatus status;
+    read::ReadStatus status;
     bound::read::FromJson(json, instance, status);
-    return status;
+    return UpdateStatus{status.success(), status.error_message()};
 }
 
 template <typename T>
-inline ReadStatus UpdateWithJson(T &instance, const std::string &&json)
+inline UpdateStatus UpdateWithJson(T &instance, const std::string &&json)
 {
     return UpdateWithJson(instance, json);
 }
 
 template <typename T>
-inline const std::string ToJson(T &instance, WriteConfig &config)
+inline const std::string ToJson(T &instance, const WriteConfig &config)
 {
     return write::ToJson(instance, config);
 }
 
 template <typename T>
-inline const std::string ToJson(T &instance, WriteConfig &&config)
+inline const std::string ToJson(T &instance, const WriteConfig &&config)
 {
     return ToJson(instance, config);
 }
@@ -94,128 +100,34 @@ inline const std::string ToJson(T &instance)
     return ToJson(instance, WriteConfig());
 }
 
-// // === Updating existing object, creating status === //
+template <typename T>
+inline const bool ToJsonFile(T &instance, const WriteConfig &config)
+{
+    if (config.GetFilename().length() == 0)
+    {
+        return false;
+    }
 
-// // Update given object properties with a given string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a bound::ReadStatus instance.
-// template <typename T>
-// ReadStatus FromJson(const std::string &json, T &object)
-// {
-//     ReadStatus status;
-//     bound::read::FromJson(json, object, status);
-//     return status;
-// }
+    return write::ToJsonFile(instance, config);
+}
 
-// // Update given object properties with a given string.
-// // Example:
-// //      User user;
-// //      ReadJson("{}", user);
-// // Returns a bound::ReadStatus instance.
-// template <typename T>
-// inline ReadStatus FromJson(const std::string &&json, T &object)
-// {
-//     return FromJson(json, object);
-// }
+template <typename T>
+inline const bool ToJsonFile(T &instance, const WriteConfig &&config)
+{
+    return ToJsonFile(instance, config);
+}
 
-// // === Creating object, updating status === //
+template <typename T>
+inline const bool ToJsonFile(T &instance, const std::string &filename)
+{
+    return ToJsonFile(instance, WriteConfig().SetFilename(filename));
+}
 
-// // Create an object with a json string, and update passed read status.
-// // Example:
-// //      bound::ReadStatus status;
-// //      User user = bound::FromJson(json);
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// T FromJson(const std::string &json, ReadStatus &status)
-// {
-//     T instance;
-//     read::FromJson(json, instance, status);
-//     return instance;
-// }
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// inline T FromJson(const std::string &&json, ReadStatus &status)
-// {
-//     return FromJson<T>(json, status);
-// }
-
-// // === Creating object, unconcerned with status === //
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// T FromJson(const std::string &json)
-// {
-//     T instance;
-//     ReadStatus status;
-//     read::FromJson(json, instance, status);
-//     return instance;
-// }
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// inline T FromJson(const std::string &&json)
-// {
-//     return FromJson<T>(json);
-// }
-
-// // === ToJson === //
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// inline std::string ToJson(T &instance, WriteConfig &write_config)
-// {
-//     return write::ToJson(instance, write_config);
-// }
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// inline std::string ToJson(T &instance, WriteConfig &&write_config)
-// {
-//     return ToJson(instance, write_config);
-// }
-
-// // Read from json string.
-// // Example:
-// //      User user;
-// //      std::string json = "{}";
-// //      ReadJson(json, user);
-// // Returns a ReadStatus instance.
-// template <typename T>
-// inline std::string ToJson(T &instance)
-// {
-//     return ToJson(instance, WriteConfig());
-// }
+template <typename T>
+inline const bool ToJsonFile(T &instance, const std::string &&filename)
+{
+    return ToJsonFile(instance, WriteConfig().SetFilename(filename));
+}
 
 } // namespace bound
 

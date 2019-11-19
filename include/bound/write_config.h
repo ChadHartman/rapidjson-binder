@@ -63,6 +63,7 @@ private:
     bool filter_empty_arrays_ = false;
     bool filter_empty_objects_ = false;
     std::string prefix_;
+    std::string filename_;
 
 public:
     bool IsFilteringNullPointers() const
@@ -131,6 +132,23 @@ public:
     const std::string &GetPrefix() const
     {
         return prefix_;
+    }
+
+    const std::string &GetFilename() const
+    {
+        return filename_;
+    }
+
+    WriteConfig &SetFilename(const std::string &filename)
+    {
+        filename_ = filename;
+        return *this;
+    }
+
+    WriteConfig &SetFilename(const std::string &&filename)
+    {
+        filename_ = filename;
+        return *this;
     }
 
     WriteConfig &SetMaxDecimalPlaces(int max_dec_places)

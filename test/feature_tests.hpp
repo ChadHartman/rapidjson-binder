@@ -271,7 +271,6 @@ TEST_CASE("Raw Json", "[raw_json]")
     SECTION("From Child")
     {
         const std::string json = "{\"json_name\":[\"Some\",\"Value\"]}";
-        bound::ReadStatus status;
         Parent parent = bound::CreateWithJson<Parent>(json).instance;
         bound::JsonRaw child = (bound::JsonRaw)parent.child;
         REQUIRE("[\"Some\",\"Value\"]" == child.value);

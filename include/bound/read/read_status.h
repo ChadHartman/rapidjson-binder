@@ -23,9 +23,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_READ_STATUS_H_
 
 #include <string>
-#include "property.h"
+#include "../property.h"
 
 namespace bound
+{
+
+namespace read
 {
 
 // Result of a JSON Read operation
@@ -63,6 +66,8 @@ public:
         property(&ReadStatus::success, "success"),
         property(&ReadStatus::error_message_, "error_message"));
 };
+
+} // namespace read
 
 } // namespace bound
 

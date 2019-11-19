@@ -228,7 +228,7 @@ inline void Write(Stream &writer, T &instance, const WriteConfig &write_config)
 }
 
 template <typename T>
-std::string ToJson(T &instance, const WriteConfig &write_config)
+const std::string ToJson(T &instance, const WriteConfig &write_config)
 {
     rapidjson::StringBuffer buffer;
 
@@ -248,15 +248,9 @@ std::string ToJson(T &instance, const WriteConfig &write_config)
 }
 
 template <typename T>
-inline std::string ToJson(T &instance, const WriteConfig &&write_config)
+bool ToJsonFile(T &instance, const WriteConfig &write_config)
 {
-    return ToJson(instance, write_config);
-}
-
-template <typename T>
-bool ToJsonFile(T &instance, const std::string &&filename, const WriteConfig &&write_config)
-{
-    FILE *fp = fopen(filename.c_str(), BOUND_BOUND_H_WRITE_MODE);
+    FILE *fp = fopen(write_config.GetFilename().c_str(), BOUND_BOUND_H_WRITE_MODE);
     if (!fp)
     {
         return false;

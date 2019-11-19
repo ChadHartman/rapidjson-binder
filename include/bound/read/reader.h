@@ -25,7 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "parser.h"
 #include "read_target.h"
 #include "assign.h"
-#include "../read_status.h"
+#include "read_status.h"
 #include "../type_traits.h"
 #include "raw_json_reader.h"
 
