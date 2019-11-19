@@ -116,11 +116,12 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 {
     SECTION("User creation")
     {
-        User user = bound::FromJson<User>(
-            "{\"info\":{\"name\":\"alpha\"},"
-            "\"birthdate\":17,"
-            "\"aliases\":[\"beta\",\"gamma\"],"
-            "\"locked\":false}");
+        User user = bound::CreateWithJson<User>(
+                        "{\"info\":{\"name\":\"alpha\"},"
+                        "\"birthdate\":17,"
+                        "\"aliases\":[\"beta\",\"gamma\"],"
+                        "\"locked\":false}")
+                        .instance;
 
         REQUIRE(user.info.name == "alpha");
         REQUIRE(user.birthdate.timestamp_ms == 17);
@@ -133,14 +134,15 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("Obj with ints")
     {
-        Foo<int> item = bound::FromJson<Foo<int>>(
-            "{"
-            "\"alpha\":1,"
-            "\"beta\":2,"
-            "\"gamma\":3,"
-            "\"delta\":4,"
-            "\"epsilon\":5"
-            "}");
+        Foo<int> item = bound::CreateWithJson<Foo<int>>(
+                            "{"
+                            "\"alpha\":1,"
+                            "\"beta\":2,"
+                            "\"gamma\":3,"
+                            "\"delta\":4,"
+                            "\"epsilon\":5"
+                            "}")
+                            .instance;
 
         REQUIRE(5 == item.alpha());
         REQUIRE(2 == item.beta);
@@ -149,14 +151,15 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("Obj with map<string, int>")
     {
         Foo<std::map<std::string, bound::JsonInt>>
-            item = bound::FromJson<Foo<std::map<std::string, bound::JsonInt>>>(
-                "{"
-                "\"alpha\":{\"i\":1},"
-                "\"beta\":{\"i\":2},"
-                "\"gamma\":{\"i\":3},"
-                "\"delta\":{\"i\":4},"
-                "\"epsilon\":{\"i\":5}"
-                "}");
+            item = bound::CreateWithJson<Foo<std::map<std::string, bound::JsonInt>>>(
+                       "{"
+                       "\"alpha\":{\"i\":1},"
+                       "\"beta\":{\"i\":2},"
+                       "\"gamma\":{\"i\":3},"
+                       "\"delta\":{\"i\":4},"
+                       "\"epsilon\":{\"i\":5}"
+                       "}")
+                       .instance;
 
         REQUIRE(5 == item.alpha().at("i").value);
         REQUIRE(2 == item.beta.at("i").value);
@@ -165,14 +168,15 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("Obj with map<string, json>")
     {
         Foo<std::map<std::string, bound::JsonRaw>>
-            item = bound::FromJson<Foo<std::map<std::string, bound::JsonRaw>>>(
-                "{"
-                "\"alpha\":{\"i\":{\"value\":1}},"
-                "\"beta\":{\"i\":{\"value\":2}},"
-                "\"gamma\":{\"i\":{\"value\":3}},"
-                "\"delta\":{\"i\":{\"value\":4}},"
-                "\"epsilon\":{\"i\":{\"value\":5}}"
-                "}");
+            item = bound::CreateWithJson<Foo<std::map<std::string, bound::JsonRaw>>>(
+                       "{"
+                       "\"alpha\":{\"i\":{\"value\":1}},"
+                       "\"beta\":{\"i\":{\"value\":2}},"
+                       "\"gamma\":{\"i\":{\"value\":3}},"
+                       "\"delta\":{\"i\":{\"value\":4}},"
+                       "\"epsilon\":{\"i\":{\"value\":5}}"
+                       "}")
+                       .instance;
 
         REQUIRE("{\"value\":5}" == item.alpha().at("i").value);
         REQUIRE("{\"value\":2}" == item.beta.at("i").value);
@@ -180,25 +184,25 @@ TEST_CASE("Reader Tests", "[reader_tests]")
 
     SECTION("int")
     {
-        REQUIRE(1 == bound::FromJson<int>("1"));
+        REQUIRE(1 == bound::CreateWithJson<int>("1").instance);
     }
 
     SECTION("string")
     {
-        REQUIRE("value" == bound::FromJson<std::string>("\"value\""));
+        REQUIRE("value" == bound::CreateWithJson<std::string>("\"value\"").instance);
     }
 
     SECTION("map<string, string>")
     {
         using Json = std::map<std::string, std::string>;
-        Json item = bound::FromJson<Json>("{\"foo\":\"value\"}");
+        Json item = bound::CreateWithJson<Json>("{\"foo\":\"value\"}").instance;
         REQUIRE("value" == item.at("foo"));
     }
 
     SECTION("list<string>")
     {
         using Container = std::list<std::string>;
-        Container item = bound::FromJson<Container>("[\"foo\",\"bar\"]");
+        Container item = bound::CreateWithJson<Container>("[\"foo\",\"bar\"]").instance;
         REQUIRE("foo" == item.front());
         REQUIRE("bar" == item.back());
     }
@@ -206,7 +210,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("list<vector<string>>")
     {
         using Container = std::list<std::vector<std::string>>;
-        Container item = bound::FromJson<Container>("[[\"foo\",\"bar\"]]");
+        Container item = bound::CreateWithJson<Container>("[[\"foo\",\"bar\"]]").instance;
         REQUIRE("foo" == item.front().front());
         REQUIRE("bar" == item.front().back());
     }
@@ -214,7 +218,7 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("deque<int>")
     {
         using Container = std::deque<int>;
-        Container item = bound::FromJson<Container>("[-1,100]");
+        Container item = bound::CreateWithJson<Container>("[-1,100]").instance;
         REQUIRE(-1 == item[0]);
         REQUIRE(100 == item[1]);
     }
@@ -222,22 +226,23 @@ TEST_CASE("Reader Tests", "[reader_tests]")
     SECTION("vector<map<string, string>>")
     {
         using Json = std::vector<std::map<std::string, std::string>>;
-        Json item = bound::FromJson<Json>("[{\"foo\":\"bar\"}]");
+        Json item = bound::CreateWithJson<Json>("[{\"foo\":\"bar\"}]").instance;
         REQUIRE("bar" == item[0]["foo"]);
     }
 
     SECTION("DynObject")
     {
-        DynObject o = bound::FromJson<DynObject>(
-            "{"
-            "\"name\":\"John\","
-            "\"hometown\":\"San Diego\","
-            "\"age\":32,"
-            "\"aliases\":[\"Johnny\",\"Nathan\"],"
-            "\"demographics\":{"
-            "\"race\":\"purple\""
-            "}"
-            "}");
+        DynObject o = bound::CreateWithJson<DynObject>(
+                          "{"
+                          "\"name\":\"John\","
+                          "\"hometown\":\"San Diego\","
+                          "\"age\":32,"
+                          "\"aliases\":[\"Johnny\",\"Nathan\"],"
+                          "\"demographics\":{"
+                          "\"race\":\"purple\""
+                          "}"
+                          "}")
+                          .instance;
 
         REQUIRE("John" == o.name);
         REQUIRE("\"San Diego\"" == o.addl_props.at("hometown").value);

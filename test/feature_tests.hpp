@@ -22,7 +22,7 @@ void test_seq_container_int()
 {
     const static std::string json = "[-1,0,1]";
     T v = {3, 2, 1};
-    bound::FromJson(json, v);
+    bound::UpdateWithJson(v, json);
     REQUIRE(json == bound::ToJson(v));
 }
 
@@ -31,7 +31,7 @@ void test_seq_container_str()
 {
     const static std::string json = "[\"-1\",\"0\",\"1\"]";
     T v = {"3", "2", "1"};
-    bound::FromJson(json, v);
+    bound::UpdateWithJson(v, json);
     REQUIRE(json == bound::ToJson(v));
 }
 
@@ -41,45 +41,45 @@ TEST_CASE("Supported Types", "[supported_types]")
     SECTION("int")
     {
         int a;
-        bound::FromJson("17", a);
+        bound::UpdateWithJson(a, "17");
         REQUIRE(17 == a);
 
-        bound::FromJson("null", a);
+        bound::UpdateWithJson(a, "null");
         REQUIRE(0 == a);
     }
 
     SECTION("unsigned")
     {
         unsigned a;
-        bound::FromJson("17", a);
+        bound::UpdateWithJson(a, "17");
         REQUIRE(17 == a);
     }
 
     SECTION("long")
     {
         long a;
-        bound::FromJson("17", a);
+        bound::UpdateWithJson(a, "17");
         REQUIRE(17 == a);
     }
 
     SECTION("float")
     {
         float a;
-        bound::FromJson("17.17", a);
+        bound::UpdateWithJson(a, "17.17");
         REQUIRE(17.17f == a);
     }
 
     SECTION("double")
     {
         double a;
-        bound::FromJson("17.17", a);
+        bound::UpdateWithJson(a, "17.17");
         REQUIRE(17.17 == a);
     }
 
     SECTION("bool")
     {
         bool a = false;
-        bound::FromJson("true", a);
+        bound::UpdateWithJson(a, "true");
         REQUIRE(a);
     }
 
@@ -104,14 +104,14 @@ TEST_CASE("Supported Types", "[supported_types]")
     SECTION("std::string")
     {
         std::string v = "foo";
-        bound::FromJson("\"bar\"", v);
+        bound::UpdateWithJson(v, "\"bar\"");
         REQUIRE(v == "bar");
     }
 
     SECTION("std::map<std::string, std::string>")
     {
         std::map<std::string, std::string> v = {{"foo", "bar"}};
-        bound::FromJson("{\"alpha\":\"beta\",\"gamma\":\"delta\"}", v);
+        bound::UpdateWithJson(v, "{\"alpha\":\"beta\",\"gamma\":\"delta\"}");
         REQUIRE(v.size() == 2);
         REQUIRE(v["alpha"] == "beta");
         REQUIRE(v["gamma"] == "delta");
@@ -120,44 +120,44 @@ TEST_CASE("Supported Types", "[supported_types]")
     SECTION("bound::JsonFloat")
     {
         bound::JsonFloat v;
-        bound::FromJson("22.22", v);
+        bound::UpdateWithJson(v, "22.22");
         REQUIRE(v.value == 22.22);
         REQUIRE("22.22" == bound::ToJson(v));
 
-        bound::FromJson("null", v);
+        bound::UpdateWithJson(v, "null");
         REQUIRE(0.0 == v.value);
     }
 
     SECTION("bound::JsonBool")
     {
         bound::JsonBool v;
-        bound::FromJson("false", v);
+        bound::UpdateWithJson(v, "false");
         REQUIRE(v.value == false);
         REQUIRE("false" == bound::ToJson(v));
 
-        bound::FromJson("null", v);
+        bound::UpdateWithJson(v, "null");
         REQUIRE(false == v.value);
     }
 
     SECTION("bound::JsonUint")
     {
         bound::JsonUint v;
-        bound::FromJson("12345", v);
+        bound::UpdateWithJson(v, "12345");
         REQUIRE(v.value == 12345);
         REQUIRE("12345" == bound::ToJson(v));
 
-        bound::FromJson("null", v);
+        bound::UpdateWithJson(v, "null");
         REQUIRE(0 == v.value);
     }
 
     SECTION("bound::JsonInt")
     {
         bound::JsonInt v;
-        bound::FromJson("-12345", v);
+        bound::UpdateWithJson(v, "-12345");
         REQUIRE(v.value == -12345);
         REQUIRE("-12345" == bound::ToJson(v));
 
-        bound::FromJson("null", v);
+        bound::UpdateWithJson(v, "null");
         REQUIRE(0 == v.value);
     }
 
@@ -165,11 +165,11 @@ TEST_CASE("Supported Types", "[supported_types]")
     {
         const static std::string value = "\"Hello, world!\"";
         bound::JsonString v;
-        bound::FromJson(value, v);
+        bound::UpdateWithJson(v, value);
         REQUIRE(v.value == value.substr(1, value.length() - 2));
         REQUIRE(value == bound::ToJson(v));
 
-        bound::FromJson("null", v);
+        bound::UpdateWithJson(v, "null");
         REQUIRE("" == v.value);
     }
 
@@ -178,7 +178,7 @@ TEST_CASE("Supported Types", "[supported_types]")
         bound::JsonRaw v;
 
         auto test = [](bound::JsonRaw &v, std::string &&json) {
-            bound::FromJson(json, v);
+            bound::UpdateWithJson(v, json);
             REQUIRE(json == v.value);
             REQUIRE(json == bound::ToJson(v));
         };
@@ -199,7 +199,7 @@ TEST_CASE("Property Declaration", "[property_declaration]")
     SECTION("Known Properties")
     {
         const std::string json = "{\"bar\":17}";
-        Foo<int> foo = bound::FromJson<Foo<int>>(json);
+        Foo<int> foo = bound::CreateWithJson<Foo<int>>(json).instance;
         REQUIRE(17 == foo.bar);
         REQUIRE(json == bound::ToJson(foo));
     }
@@ -207,7 +207,7 @@ TEST_CASE("Property Declaration", "[property_declaration]")
     SECTION("Dynamic Properties[Known Value Types]")
     {
         const std::string json = "{\"bar\":17,\"unknown_key\":18}";
-        Foo<int, int> foo = bound::FromJson<Foo<int, int>>(json);
+        Foo<int, int> foo = bound::CreateWithJson<Foo<int, int>>(json).instance;
         REQUIRE(17 == foo.bar);
         REQUIRE(18 == foo.addl_props["unknown_key"]);
         REQUIRE(json == bound::ToJson(foo));
@@ -216,7 +216,7 @@ TEST_CASE("Property Declaration", "[property_declaration]")
     SECTION("Dynamic Properties[Unnown Value Types]")
     {
         const std::string json = "{\"bar\":17,\"unknown_key_a\":18,\"unknown_key_b\":[19],\"unknown_key_c\":\"baz\"}";
-        Foo<int> foo = bound::FromJson<Foo<int>>(json);
+        Foo<int> foo = bound::CreateWithJson<Foo<int>>(json).instance;
         REQUIRE(17 == foo.bar);
         REQUIRE("18" == foo.addl_props["unknown_key_a"].value);
         REQUIRE("[19]" == foo.addl_props["unknown_key_b"].value);
@@ -243,7 +243,6 @@ public:
 
     Child &operator=(const bound::JsonRaw &value)
     {
-        printf("Setting raw_json with \"%s\".", value.value.c_str());
         raw_json = value.value;
         return *this;
     }
@@ -264,7 +263,7 @@ TEST_CASE("Raw Json", "[raw_json]")
     SECTION("From Parent")
     {
         const std::string json = "{\"bar\":{\"some\":[\"dynamic\",{\"object\":\"value\"}]}}";
-        Foo<bound::JsonRaw> foo = bound::FromJson<Foo<bound::JsonRaw>>(json);
+        Foo<bound::JsonRaw> foo = bound::CreateWithJson<Foo<bound::JsonRaw>>(json).instance;
         REQUIRE("{\"some\":[\"dynamic\",{\"object\":\"value\"}]}" == foo.bar.value);
         REQUIRE(json == bound::ToJson(foo));
     }
@@ -273,7 +272,7 @@ TEST_CASE("Raw Json", "[raw_json]")
     {
         const std::string json = "{\"json_name\":[\"Some\",\"Value\"]}";
         bound::ReadStatus status;
-        Parent parent = bound::FromJson<Parent>(json, status);
+        Parent parent = bound::CreateWithJson<Parent>(json).instance;
         bound::JsonRaw child = (bound::JsonRaw)parent.child;
         REQUIRE("[\"Some\",\"Value\"]" == child.value);
         REQUIRE(json == bound::ToJson(parent));
@@ -371,14 +370,14 @@ TEST_CASE("Setter", "[setter]")
     SECTION("Parent only")
     {
         std::string json = "{\"json_name\":\"foo\"}";
-        ParentOnly parent = bound::FromJson<ParentOnly>(json);
+        ParentOnly parent = bound::CreateWithJson<ParentOnly>(json).instance;
         REQUIRE("foo" == parent.value);
     }
 
     SECTION("Parent and Child")
     {
         std::string json = "{\"json_name\":\"foo\"}";
-        Parent parent = bound::FromJson<Parent>(json);
+        Parent parent = bound::CreateWithJson<Parent>(json).instance;
         REQUIRE("foo" == parent.child.value);
     }
 }
