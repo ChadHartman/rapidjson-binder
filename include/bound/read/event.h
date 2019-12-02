@@ -244,74 +244,57 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     const std::string ToString() const
     {
-        std::string response;
-
         switch (type)
         {
         case Event::kTypeBegin:
-            response = "{\"type\":\"Begin\"}";
-            break;
+            return "{\"type\":\"Begin\"}";
 
         case Event::kTypeNull:
-            response = "{\"type\":\"Null\"}";
-            break;
+            return "{\"type\":\"Null\"}";
 
         case Event::kTypeBool:
         {
             std::string bool_value{value.bool_value ? "true" : "false"};
-            response = "{\"type\":\"Bool\",\"value\":" + bool_value + "}";
+            return "{\"type\":\"Bool\",\"value\":" + bool_value + "}";
         }
-        break;
 
         case Event::kTypeInt:
-            response = "{\"type\":\"Int\",\"value\":" + std::to_string(value.int_value) + "}";
-            break;
+            return "{\"type\":\"Int\",\"value\":" + std::to_string(value.int_value) + "}";
 
         case Event::kTypeUint:
-            response = "{\"type\":\"Uint\",\"value\":" + std::to_string(value.unsigned_value) + "}";
-            break;
+            return "{\"type\":\"Uint\",\"value\":" + std::to_string(value.unsigned_value) + "}";
 
         case Event::kTypeInt64:
-            response = "{\"type\":\"Int64\",\"value\":" + std::to_string(value.int64_t_value) + "}";
-            break;
+            return "{\"type\":\"Int64\",\"value\":" + std::to_string(value.int64_t_value) + "}";
 
         case Event::kTypeUint64:
-            response = "{\"type\":\"Uint64\",\"value\":" + std::to_string(value.uint64_t_value) + "}";
-            break;
+            return "{\"type\":\"Uint64\",\"value\":" + std::to_string(value.uint64_t_value) + "}";
 
         case Event::kTypeDouble:
-            response = "{\"type\":\"Double\",\"value\":" + std::to_string(value.double_value) + "}";
-            break;
+            return "{\"type\":\"Double\",\"value\":" + std::to_string(value.double_value) + "}";
 
         case Event::kTypeString:
-            response = "{\"type\":\"String\",\"value\":\"" + string_value + "\"}";
-            break;
+            return "{\"type\":\"String\",\"value\":\"" + string_value + "\"}";
 
         case Event::kTypeStartObject:
-            response = "{\"type\":\"StartObject\"}";
-            break;
+            return "{\"type\":\"StartObject\"}";
 
         case Event::kTypeKey:
-            response = "{\"type\":\"Key\",\"value\":\"" + string_value + "\"}";
-            break;
+            return "{\"type\":\"Key\",\"value\":\"" + string_value + "\"}";
 
         case Event::kTypeStartArray:
-            response = "{\"type\":\"StartArray\"}";
-            break;
+            return "{\"type\":\"StartArray\"}";
 
         case Event::kTypeEndArray:
-            response = "{\"type\":\"EndArray\"}";
-            break;
+            return "{\"type\":\"EndArray\"}";
 
         case Event::kTypeEndObject:
-            response = "{\"type\":\"EndObject\"}";
-            break;
+            return "{\"type\":\"EndObject\"}";
 
         case Event::kTypeEnd:
-            response = "{\"type\":\"End\"}";
-            break;
+            return "{\"type\":\"End\"}";
         }
-        return response;
+        return "{\"type\":\"unknown\"}";
     }
 };
 

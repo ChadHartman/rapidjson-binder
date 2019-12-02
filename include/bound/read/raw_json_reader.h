@@ -35,6 +35,8 @@ class RawJsonReader
 
 public:
     RawJsonReader(Parser<Stream> &parser) : parser_{parser} {}
+    RawJsonReader(const RawJsonReader &) = delete;
+    RawJsonReader &operator=(const RawJsonReader &) = delete;
 
     // Writer for JsonRaw properties
     void Write(rapidjson::Writer<rapidjson::StringBuffer> &writer)

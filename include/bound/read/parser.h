@@ -32,7 +32,6 @@ namespace read
 {
 
 // Parser which will tokenize JSON parse events
-//  See bound.h for how to use
 template <typename Stream>
 class Parser
 {
@@ -46,6 +45,8 @@ private:
 
 public:
     Parser(Stream &&stream) : stream_{stream} {}
+    Parser(const Parser &) = delete;
+    Parser &operator=(const Parser &) = delete;
 
     const Event &event()
     {
@@ -78,6 +79,7 @@ public:
         return true;
     }
 
+    // Recursively skips the section
     void Skip()
     {
         const Event::Type end_type = event_.type == Event::kTypeStartObject ? Event::kTypeEndObject : Event::kTypeEndArray;

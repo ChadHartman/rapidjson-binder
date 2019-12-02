@@ -19,6 +19,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
+// Vend additional types that allow for overloaded assignment, comparison, printing, 
+//  and conditional rendering
 #ifndef BOUND_TYPES_H_
 #define BOUND_TYPES_H_
 
