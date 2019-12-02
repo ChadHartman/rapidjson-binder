@@ -234,6 +234,8 @@ public:
           read_status_{read_status} {}
     Reader(const Reader &) = delete;
     Reader &operator=(const Reader &) = delete;
+    Reader(const Reader &&) = delete;
+    Reader &operator=(const Reader &&) = delete;
 
     template <typename T>
     typename std::enable_if_t<

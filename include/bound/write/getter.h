@@ -19,16 +19,16 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
+// Utilities for getting properties to write
 #ifndef BOUND_WRITE_GETTER_H_
 #define BOUND_WRITE_GETTER_H_
-
-#include "../property.h"
 
 namespace bound
 {
 namespace write
 {
 
+// Get via member object pointer
 template <typename T, typename M, typename F>
 typename std::enable_if_t<std::is_member_object_pointer<M>::value>
 Get(T &object, M member, F &&f)
@@ -36,6 +36,7 @@ Get(T &object, M member, F &&f)
     f(object.*(member));
 }
 
+// Get via getter
 template <typename T, typename M, typename F>
 typename std::enable_if_t<is_getter<M>::value>
 Get(T &object, M member, F &&f)
@@ -44,6 +45,7 @@ Get(T &object, M member, F &&f)
     f(value);
 }
 
+// Does nothing, needed for compilation
 template <typename T, typename M, typename F>
 typename std::enable_if_t<
     !std::is_member_object_pointer<M>::value &&

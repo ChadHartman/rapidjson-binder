@@ -29,6 +29,7 @@ namespace bound
 namespace write
 {
 
+// Scans objects for whether they are to be written
 class Scanner
 {
 private:
@@ -36,6 +37,10 @@ private:
 
 public:
     Scanner(const WriteConfig &write_config) : write_config_{write_config} {}
+    Scanner(const Scanner &) = delete;
+    Scanner &operator=(const Scanner &) = delete;
+    Scanner(const Scanner &&) = delete;
+    Scanner &operator=(const Scanner &&) = delete;
 
     template <typename T>
     typename std::enable_if<is_bound<T>::value, unsigned>::type

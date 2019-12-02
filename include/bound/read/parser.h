@@ -47,6 +47,8 @@ public:
     Parser(Stream &&stream) : stream_{stream} {}
     Parser(const Parser &) = delete;
     Parser &operator=(const Parser &) = delete;
+    Parser(const Parser &&) = delete;
+    Parser &operator=(const Parser &&) = delete;
 
     const Event &event()
     {
