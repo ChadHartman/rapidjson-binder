@@ -36,22 +36,22 @@ namespace bound
 namespace read
 {
 
-const static unsigned int kEventTypeStartValue =
-    Event::kTypeNull |
-    Event::kTypeBool |
-    Event::kTypeInt |
-    Event::kTypeUint |
-    Event::kTypeInt64 |
-    Event::kTypeUint64 |
-    Event::kTypeDouble |
-    Event::kTypeString |
-    Event::kTypeStartObject |
-    Event::kTypeStartArray;
-
 template <typename Stream>
 class Reader
 {
 private:
+    const static unsigned int kEventTypeStartValue =
+        Event::kTypeNull |
+        Event::kTypeBool |
+        Event::kTypeInt |
+        Event::kTypeUint |
+        Event::kTypeInt64 |
+        Event::kTypeUint64 |
+        Event::kTypeDouble |
+        Event::kTypeString |
+        Event::kTypeStartObject |
+        Event::kTypeStartArray;
+
     Parser<Stream> &parser_;
     ReadStatus &read_status_;
 
@@ -77,13 +77,17 @@ private:
         }
     }
 
+    // === Set values via member objer pointer or setter method === //
+
+    // Set member object pointer directly
     template <typename T, typename M>
     typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-    Set(T &instance, M property)
+    Set(T &instance, M mop)
     {
-        Read(instance.*(property));
+        Read(instance.*(mop));
     }
 
+    // Create instance, read into it, and call setter with pointer arg
     template <typename T, typename M>
     typename std::enable_if_t<
         is_setter<M>::value &&
@@ -98,6 +102,7 @@ private:
         }
     }
 
+    // Create instance, read into it, and call setter without pointer arg
     template <typename T, typename M>
     typename std::enable_if_t<
         is_setter<M>::value &&
@@ -112,13 +117,7 @@ private:
         }
     }
 
-    template <typename T, typename M>
-    typename std::enable_if_t<std::is_member_object_pointer<M>::value>
-    Set(T &instance, std::string &key, M property)
-    {
-        Read(instance.*(property));
-    }
-
+    // Does nothing, exists only for compilation but will never be called
     template <typename T, typename M>
     typename std::enable_if_t<
         !is_setter<M>::value &&
@@ -128,6 +127,9 @@ private:
         // Do nothing, needed for compilation
     }
 
+    // === Property setters for map and bound objects === //
+
+    // Set property of map
     template <typename T>
     void SetProperty(std::map<std::string, T> &instance, std::string &key)
     {
@@ -139,20 +141,16 @@ private:
         }
     }
 
-    template <typename T, typename M>
-    typename std::enable_if_t<is_bound<T>::value && std::is_member_object_pointer<M>::value>
-    SetProperty(T &instance, M member, std::string &key)
-    {
-        SetProperty(instance.*(member), key);
-    }
-
+    // Set property of bound object
     template <typename T>
     typename std::enable_if_t<is_bound<T>::value>
     SetProperty(T &instance, std::string &key)
     {
         bool found = false;
 
+        // Find explicitly defined property
         ListProperties(instance, [&](auto &property) {
+            // property.name == "" when it is a json_props map
             if (property.name != key || !ReadTarget<decltype(property.member)>::is_assignable)
             {
                 return;
@@ -162,6 +160,7 @@ private:
             Set(instance, property.member);
         });
 
+        // Explicitly defined property not found, find dynamic key collection
         if (!found)
         {
             ListProperties(instance, [&](auto &property) {
@@ -177,6 +176,16 @@ private:
         {
             Skip();
         }
+    }
+
+    // Set property of child bound object/map
+    template <typename T, typename M>
+    typename std::enable_if_t<
+        is_bound<T>::value &&
+        std::is_member_object_pointer<M>::value>
+    SetProperty(T &instance, M member, std::string &key)
+    {
+        SetProperty(instance.*(member), key);
     }
 
     template <typename T, typename M>
@@ -216,15 +225,20 @@ private:
     inline typename std::enable_if_t<!is_clearable<T>::value>
     Clear(T &container)
     {
+        // Needed for compilation
     }
 
 public:
     Reader(Parser<Stream> &parser, ReadStatus &read_status)
         : parser_{parser},
           read_status_{read_status} {}
+    Reader(const Reader &) = delete;
+    Reader &operator=(const Reader &) = delete;
 
     template <typename T>
-    typename std::enable_if_t<is_bound<T>::value || is_json_properties<T>::value>
+    typename std::enable_if_t<
+        is_bound<T>::value ||
+        is_json_properties<T>::value>
     Read(T &instance)
     {
 #ifdef BOUND_READ_READER_H_DEBUG
@@ -235,6 +249,7 @@ public:
         Event::Type event_type;
 
         Prime();
+        // Reset for a clean slate; only works for maps
         Clear(instance);
 
         while (read_status_.success() && parser_.FetchNextEvent())
@@ -286,6 +301,7 @@ public:
         Event::Type event_type;
 
         Prime();
+        // Reset for clean slate
         Clear(instance);
 
         while (read_status_.success() && parser_.FetchNextEvent())
@@ -311,6 +327,7 @@ public:
         }
     }
 
+    // Read into JsonRaw object, then assign it to instance
     template <typename T>
     std::enable_if_t<std::is_assignable<T, JsonRaw>::value>
     Read(T &instance)
@@ -326,6 +343,7 @@ public:
         }
     }
 
+    // Read into JsonRaw object
     void Read(JsonRaw &instance)
     {
 #ifdef BOUND_READ_READER_H_DEBUG
@@ -334,6 +352,7 @@ public:
         RawJsonReader<Stream>(parser_).Read(instance);
     }
 
+    // Simple object assignment
     template <typename T>
     typename std::enable_if_t<
         !is_bound<T>::value &&

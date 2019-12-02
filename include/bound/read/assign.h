@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_READ_ASSIGN_H_
 #define BOUND_READ_ASSIGN_H_
 
-#include "../type_traits.h"
+#include "read_target.h"
 
 // #define BOUND_READ_ASSIGN_H_DEBUG
 
@@ -32,19 +32,12 @@ namespace bound
 namespace read
 {
 
-template <typename V>
-struct value_raw
-{
-    using type = typename std::remove_reference<
-        typename std::remove_const<V>::type>::type;
-};
-
 template <typename A, typename B>
 struct is_assignable
 {
     const static bool value =
-        std::is_same<A &, typename value_raw<B>::type &>::value ||
-        std::is_assignable<A &, typename value_raw<B>::type &>::value;
+        std::is_same<A &, typename raw_type<B>::type &>::value ||
+        std::is_assignable<A &, typename raw_type<B>::type &>::value;
 };
 
 template <typename A, typename B>

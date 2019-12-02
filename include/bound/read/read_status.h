@@ -23,7 +23,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_READ_STATUS_H_
 
 #include <string>
-#include "../property.h"
 
 namespace bound
 {

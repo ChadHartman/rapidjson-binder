@@ -28,6 +28,7 @@ namespace bound
 namespace read
 {
 
+// Reads parser at it's current depth into a JsonRaw instance
 template <typename Stream>
 class RawJsonReader
 {

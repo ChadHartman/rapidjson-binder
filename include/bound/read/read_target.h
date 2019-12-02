@@ -32,6 +32,7 @@ struct Unassignable
 {
 };
 
+// Strips all qualifiers from a type: "*"", "&", "const"
 template <typename T>
 struct raw_type
 {
