@@ -12,15 +12,43 @@ void test(ValueType value, typename JsonType::type expected)
     JsonType target;
 
     REQUIRE(bound::read::is_assignable<JsonType, decltype(value)>::value);
-    REQUIRE(!bound::read::is_convertable<JsonType, decltype(value)>::value);
     REQUIRE(!bound::read::is_unassignable<JsonType, decltype(value)>::value);
 
     REQUIRE(bound::read::Assign(target, value));
     REQUIRE(target.value == expected);
 }
 
+template <typename T>
+void TestAssignNull(T initial, T expected)
+{
+    REQUIRE(bound::read::Assign(initial, nullptr));
+    REQUIRE(initial == expected);
+}
+
+TEST_CASE("SFINAE", "[sfinae]")
+{
+    REQUIRE(bound::read::is_assignable<int &, int>::value);
+    REQUIRE(bound::read::is_assignable<int &, const int &>::value);
+    REQUIRE(bound::read::is_assignable<int &, long>::value);
+    REQUIRE(bound::read::is_assignable<int &, const double &>::value);
+    REQUIRE(bound::read::is_assignable<int &, bool &>::value);
+    REQUIRE(bound::read::is_assignable<bool &, int>::value);
+    REQUIRE(bound::read::is_assignable<double &, int>::value);
+    REQUIRE(bound::read::is_assignable<bool &, double>::value);
+}
+
 TEST_CASE("Assign Tests", "[assign_tests]")
 {
+    SECTION("nulls")
+    {
+        TestAssignNull<bound::JsonString>({"default"}, {""});
+        TestAssignNull<bound::JsonFloat>({22.22}, {0.0});
+        TestAssignNull<bound::JsonBool>({true}, {false});
+        TestAssignNull<bound::JsonUint>({111}, {0});
+        TestAssignNull<bound::JsonInt>({-111}, {0});
+        TestAssignNull<bound::JsonRaw>({"{\"message\":\"hello\"}"}, {""});
+    }
+
     SECTION("JsonString|bool")
     {
         test<bound::JsonString, bool>(true, "true");
@@ -52,7 +80,6 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         double value = 0.0;
 
         REQUIRE(bound::read::is_assignable<bound::JsonString, decltype(value)>::value);
-        REQUIRE(!bound::read::is_convertable<bound::JsonString, decltype(value)>::value);
         REQUIRE(!bound::read::is_unassignable<bound::JsonString, decltype(value)>::value);
 
         REQUIRE(bound::read::Assign(target, value));
@@ -125,7 +152,7 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         test<bound::JsonBool, double>(23429.1310941, true);
     }
     //---
-    // SECTION("JsonUint")
+
     SECTION("JsonUint")
     {
         test<bound::JsonUint, bool>(true, 1);

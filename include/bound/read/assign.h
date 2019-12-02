@@ -43,17 +43,8 @@ template <typename A, typename B>
 struct is_assignable
 {
     const static bool value =
-        std::is_same<A, typename value_raw<B>::type>::value ||
-        std::is_assignable<A, typename value_raw<B>::type>::value;
-};
-
-template <typename A, typename B>
-struct is_convertable
-{
-    const static bool value =
-        !is_assignable<A, B>::value &&
-        std::is_arithmetic<A>::value &&
-        std::is_arithmetic<typename value_raw<B>::type>::value;
+        std::is_same<A &, typename value_raw<B>::type &>::value ||
+        std::is_assignable<A &, typename value_raw<B>::type &>::value;
 };
 
 template <typename A, typename B>
@@ -61,7 +52,6 @@ struct is_unassignable
 {
     const static bool value =
         !is_assignable<A, B>::value &&
-        !is_convertable<A, B>::value &&
         !std::is_same<B, std::nullptr_t>::value;
 };
 
@@ -85,18 +75,6 @@ Assign(A &a, B &b)
     printf("Assign[is_assignable]\n");
 #endif
     a = b;
-    return true;
-}
-
-// Conversion assign
-template <typename A, typename B>
-typename std::enable_if<is_convertable<A, B>::value, bool>::type
-Assign(A &a, B &b)
-{
-#ifdef BOUND_READ_ASSIGN_H_DEBUG
-    printf("Assign[is_convertable]\n");
-#endif
-    a = static_cast<A>(b);
     return true;
 }
 

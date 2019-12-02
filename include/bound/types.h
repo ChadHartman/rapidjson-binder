@@ -24,44 +24,63 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <string>
 #include <map>
+#include <iostream>
 
 namespace bound
 {
 
 template <typename T>
-struct JsonProperty
+struct JsonValue
 {
     using type = T;
 
     T value;
 
-    JsonProperty<T> &operator=(const std::nullptr_t new_val)
+    JsonValue<T> &operator=(const std::nullptr_t new_val)
     {
         value = T();
         return *this;
     }
 
-    JsonProperty<T> &operator=(const T &new_val)
+    JsonValue<T> &operator=(const T &new_val)
     {
         value = new_val;
         return *this;
     }
 
     template <typename V>
-    typename std::enable_if<std::is_arithmetic<V>::value, JsonProperty<T> &>::type
+    typename std::enable_if<std::is_arithmetic<V>::value, JsonValue<T> &>::type
     operator=(const V &new_val)
     {
         value = static_cast<T>(new_val);
         return *this;
     }
 
+    bool operator==(const JsonValue<T> &other) const
+    {
+        return value == other.value && render == other.render;
+    }
+
+    bool operator==(const T &other) const
+    {
+        return value = other && render;
+    }
+
     bool render = true;
 };
 
-typedef JsonProperty<double> JsonFloat;
-typedef JsonProperty<bool> JsonBool;
-typedef JsonProperty<uint64_t> JsonUint;
-typedef JsonProperty<int64_t> JsonInt;
+template <typename T>
+inline std::ostream &operator<<(std::ostream &os, const JsonValue<T> &value)
+{
+    os << value.value;
+    return os;
+}
+
+// Arithmatic types
+typedef JsonValue<double> JsonFloat;
+typedef JsonValue<bool> JsonBool;
+typedef JsonValue<uint64_t> JsonUint;
+typedef JsonValue<int64_t> JsonInt;
 
 struct JsonString
 {
@@ -95,14 +114,46 @@ struct JsonString
         return *this;
     }
 
+    bool operator==(const JsonString &other) const
+    {
+        return value == other.value && render == other.render;
+    }
+
+    bool operator==(const std::string &other) const
+    {
+        return value == other && render;
+    }
+
     bool render = true;
 };
+
+inline std::ostream &operator<<(std::ostream &os, const JsonString &value)
+{
+    os << '"' << value.value << '"';
+    return os;
+}
 
 struct JsonRaw
 {
     std::string value;
     bool render = true;
+
+    bool operator==(const JsonRaw &other) const
+    {
+        return value == other.value && render == other.render;
+    }
+
+    bool operator==(const std::string &other) const
+    {
+        return value == other && render;
+    }
 };
+
+inline std::ostream &operator<<(std::ostream &os, const JsonRaw &value)
+{
+    os << value.value;
+    return os;
+}
 
 } // namespace bound
 
