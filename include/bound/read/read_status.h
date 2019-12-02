@@ -34,37 +34,13 @@ namespace read
 // Result of a JSON Read operation
 struct ReadStatus
 {
-private:
-    std::string error_message_;
+    std::string error_message;
 
-public:
     // Whether the read was successful
     bool success() const
     {
-        return error_message_.length() == 0;
+        return error_message.length() == 0;
     };
-
-    // The error message if one occurred
-    std::string error_message() const
-    {
-        return error_message_;
-    }
-
-    // The error message setter
-    void set_error_message(std::string &error_message)
-    {
-        error_message_ = error_message;
-    }
-
-    // The error message setter
-    void set_error_message(std::string &&error_message)
-    {
-        error_message_ = error_message;
-    }
-
-    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
-        property(&ReadStatus::success, "success"),
-        property(&ReadStatus::error_message_, "error_message"));
 };
 
 } // namespace read

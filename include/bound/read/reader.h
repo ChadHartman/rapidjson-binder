@@ -245,7 +245,7 @@ public:
             {
                 if (!last_token_was_key)
                 {
-                    read_status_.set_error_message("No key found for " + parser_.event().ToString());
+                    read_status_.error_message = "No key found for " + parser_.event().ToString();
                     break;
                 }
 
@@ -258,7 +258,7 @@ public:
             {
                 if (last_token_was_key)
                 {
-                    read_status_.set_error_message("Unassigned key: \"" + key + "\"; found new key: " + parser_.event().ToString());
+                    read_status_.error_message = "Unassigned key: \"" + key + "\"; found new key: " + parser_.event().ToString();
                     break;
                 }
 
@@ -269,7 +269,7 @@ public:
 
             if (event_type != Event::kTypeEndObject)
             {
-                read_status_.set_error_message("Unexpected token=" + parser_.event().ToString());
+                read_status_.error_message = "Unexpected token=" + parser_.event().ToString();
             }
 
             break;
@@ -304,7 +304,7 @@ public:
             }
             else if (event_type != Event::kTypeEndArray)
             {
-                read_status_.set_error_message("Unexpected event=" + parser_.event().ToString());
+                read_status_.error_message = "Unexpected event=" + parser_.event().ToString();
             }
 
             break;
@@ -322,8 +322,7 @@ public:
         RawJsonReader<Stream>(parser_).Read(json_raw);
         if (!Assign(instance, json_raw))
         {
-            std::string error_message = "Cannot assign \"" + json_raw.value + "\" to " + typeid(T).name() + ".";
-            read_status_.set_error_message(error_message);
+            read_status_.error_message = "Cannot assign \"" + json_raw.value + "\" to " + typeid(T).name() + ".";
         }
     }
 
@@ -393,21 +392,20 @@ public:
 
         if (!assigned)
         {
-            std::string error_message = "Cannot assign type \"";
-            error_message += typeid(instance).name();
-            error_message += "\" with event ";
-            error_message += parser_.event().ToString();
-            error_message += ".";
-            read_status_.set_error_message(error_message);
+            read_status_.error_message =
+                "Cannot assign type \"" + std::string(typeid(instance).name()) +
+                "\" with event " + parser_.event().ToString() + ".";
         }
     }
 };
 
 template <typename T>
-void FromJson(const std::string &json, T &instance, ReadStatus &read_status)
+const ReadStatus FromJson(const std::string &json, T &instance)
 {
+    ReadStatus status;
     Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
-    Reader<rapidjson::StringStream>{parser, read_status}.Read(instance);
+    Reader<rapidjson::StringStream>{parser, status}.Read(instance);
+    return status;
 }
 
 } // namespace read

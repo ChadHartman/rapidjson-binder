@@ -56,10 +56,9 @@ struct UpdateStatus
 template <typename T>
 CreateStatus<T> CreateWithJson(const std::string &json)
 {
-    read::ReadStatus status;
     T instance;
-    bound::read::FromJson(json, instance, status);
-    return CreateStatus<T>{instance, status.success(), status.error_message()};
+    read::ReadStatus status = bound::read::FromJson(json, instance);
+    return CreateStatus<T>{instance, status.success(), status.error_message};
 }
 
 template <typename T>
@@ -71,9 +70,8 @@ inline CreateStatus<T> CreateWithJson(const std::string &&json)
 template <typename T>
 UpdateStatus UpdateWithJson(T &instance, const std::string &json)
 {
-    read::ReadStatus status;
-    bound::read::FromJson(json, instance, status);
-    return UpdateStatus{status.success(), status.error_message()};
+    read::ReadStatus status = bound::read::FromJson(json, instance);
+    return UpdateStatus{status.success(), status.error_message};
 }
 
 template <typename T>
