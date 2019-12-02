@@ -56,9 +56,9 @@ int main()
 
 This library utilizes rapidjson's [SAX Deserializer](http://rapidjson.org/md_doc_sax.html) to tokenize JSON events and map object properties directly with no intermediate complex objects. 
 
-This library follows a "fail fast" philosophy. Deserialization will immediately stop when an unexpected event occurs such as malformed json, incompatable value, or unknown key. JSON Comments are ignored by the library. The passed in C++ object will be in an incomplete state.
+This library follows a "fail fast" philosophy. Deserialization will immediately stop when an unexpected event occurs such as malformed json or incompatable value. JSON Comments are ignored by the library. The passed in C++ object will be in an incomplete state.
 
-Errors are reported in a `bound::ReadStatus` value which will provide a detailed messsage of where the error occurred.
+Errors are reported in a `bound::CreateStatus` or `bound::UpdateStatus` value (depending on which operation is performed) which will provide a detailed messsage of where the error occurred.
 
 ## Features
 
@@ -67,6 +67,13 @@ Errors are reported in a `bound::ReadStatus` value which will provide a detailed
 ## Changelog
 
 ### [2.0.0] - 2019-??-??
+#### Added
+- Bound types for conditional formatting
+- Support for writing `const` objects
+- Support for pointer getters and setters
+#### Removed
+- "Authorizer" feature
+    - Use `bound::JsonFloat`, `bound::JsonBool`, `bound::JsonUint`, `bound::JsonInt`, `bound::JsonString`, and `bound::JsonRaw` instead.
 
 ### [1.3.0] - 2019-08-03
 #### Added

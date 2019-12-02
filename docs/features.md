@@ -1,11 +1,5 @@
 # Features
 
-## Design philosophy
-
-Translate JSON object paradigms to c++ paradigms.
-
-TODO
-
 ## Supported Types
 
 * Arithmetic: `int`, `unsigned`, `long`, `float`, `double`, `bool`, etc
