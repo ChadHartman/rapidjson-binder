@@ -19,53 +19,70 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_READ_STATUS_H_
-#define BOUND_READ_STATUS_H_
+#ifndef BOUND_READ_PARSER_H_
+#define BOUND_READ_PARSER_H_
 
-#include <string>
-#include "property.h"
+#include <rapidjson/reader.h>
+#include "event.h"
 
 namespace bound
 {
 
-// Result of a JSON Read operation
-struct ReadStatus
+namespace read
+{
+
+// Parser which will tokenize JSON parse events
+template <typename Stream>
+class Parser
 {
 private:
-    std::string error_message_;
+    Event event_;
+    rapidjson::Reader reader_;
+    Stream stream_;
+
+    bool is_reader_started_ = false;
+    bool is_reader_complete_ = false;
 
 public:
-    // Whether the read was successful
-    bool success() const
-    {
-        return error_message_.length() == 0;
-    };
+    Parser(Stream &&stream) : stream_{stream} {}
+    Parser(const Parser &) = delete;
+    Parser &operator=(const Parser &) = delete;
+    Parser(const Parser &&) = delete;
+    Parser &operator=(const Parser &&) = delete;
 
-    // The error message if one occurred
-    std::string error_message() const
+    const Event &event()
     {
-        return error_message_;
+        return event_;
     }
 
-    // The error message setter
-    void set_error_message(std::string error_message)
+    // Returns true while there's new events
+    bool FetchNextEvent()
     {
-        error_message_ = error_message;
-    }
-
-    std::string ToString() const
-    {
-        if (success())
+        if (!is_reader_started_)
         {
-            return "{\"success\":true}";
+            reader_.IterativeParseInit();
+            is_reader_started_ = true;
         }
 
-        return "{\"success\":false,\"error_message\":\"" +
-               //  TODO: escape quotes
-               error_message_ +
-               "\"}";
+        if (is_reader_complete_)
+        {
+            return false;
+        }
+
+        if (reader_.IterativeParseComplete())
+        {
+            is_reader_complete_ = true;
+            event_.End();
+            return false;
+        }
+
+        reader_.IterativeParseNext<rapidjson::kParseCommentsFlag>(stream_, event_);
+
+        return true;
     }
 };
+
+} // namespace read
 
 } // namespace bound
 

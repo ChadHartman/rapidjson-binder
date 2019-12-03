@@ -19,11 +19,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_READER_EVENT_H_
-#define BOUND_READER_EVENT_H_
+#ifndef BOUND_READ_EVENT_H_
+#define BOUND_READ_EVENT_H_
 
 // Enable this flag to get values set by rapidjson
-//#define BOUND_READER_EVENT_H_DEBUG
+// #define BOUND_READ_EVENT_H_DEBUG
 
 #include "rapidjson/reader.h"
 #include <string>
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace bound
 {
 
-namespace reader
+namespace read
 {
 
 union Value {
@@ -72,7 +72,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
     // === Rapidjson Setters === //
     bool Null()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Null/>\n");
 #endif
 
@@ -83,7 +83,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Bool(bool b)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Bool value=\"%s\"/>\n", b ? "true" : "false");
 #endif
 
@@ -95,7 +95,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Int(int i)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Int value=\"%d\"/>\n", i);
 #endif
 
@@ -107,7 +107,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Uint(unsigned u)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Uint value=\"%d\"/>\n", u);
 #endif
 
@@ -119,7 +119,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Int64(int64_t i)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Int64 value=\"%lld\"/>\n", i);
 #endif
 
@@ -131,7 +131,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Uint64(uint64_t u)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Uint64 value=\"%llu\"/>\n", u);
 #endif
 
@@ -143,7 +143,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Double(double d)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Double value=\"%f\"/>\n", d);
 #endif
 
@@ -155,7 +155,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool String(const char *str, rapidjson::SizeType length, bool copy)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<String value=\"%s\"/>\n", str);
 #endif
 
@@ -167,7 +167,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool StartObject()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Object>\n");
 #endif
 
@@ -178,7 +178,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool Key(const char *str, rapidjson::SizeType length, bool copy)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Key value=\"%s\"/>\n", str);
 #endif
 
@@ -190,7 +190,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool EndObject(rapidjson::SizeType memberCount)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("</Object>\n");
 #endif
 
@@ -207,7 +207,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool StartArray()
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("<Array>\n");
 #endif
 
@@ -218,7 +218,7 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     bool EndArray(rapidjson::SizeType elementCount)
     {
-#ifdef BOUND_READER_EVENT_H_DEBUG
+#ifdef BOUND_READ_EVENT_H_DEBUG
         printf("</Array>\n");
 #endif
 
@@ -244,78 +244,61 @@ struct Event : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, Event>
 
     const std::string ToString() const
     {
-        std::string response;
-
         switch (type)
         {
         case Event::kTypeBegin:
-            response = "{\"type\":\"Begin\"}";
-            break;
+            return "{\"type\":\"Begin\"}";
 
         case Event::kTypeNull:
-            response = "{\"type\":\"Null\"}";
-            break;
+            return "{\"type\":\"Null\"}";
 
         case Event::kTypeBool:
         {
             std::string bool_value{value.bool_value ? "true" : "false"};
-            response = "{\"type\":\"Bool\",\"value\":" + bool_value + "}";
+            return "{\"type\":\"Bool\",\"value\":" + bool_value + "}";
         }
-        break;
 
         case Event::kTypeInt:
-            response = "{\"type\":\"Int\",\"value\":" + std::to_string(value.int_value) + "}";
-            break;
+            return "{\"type\":\"Int\",\"value\":" + std::to_string(value.int_value) + "}";
 
         case Event::kTypeUint:
-            response = "{\"type\":\"Uint\",\"value\":" + std::to_string(value.unsigned_value) + "}";
-            break;
+            return "{\"type\":\"Uint\",\"value\":" + std::to_string(value.unsigned_value) + "}";
 
         case Event::kTypeInt64:
-            response = "{\"type\":\"Int64\",\"value\":" + std::to_string(value.int64_t_value) + "}";
-            break;
+            return "{\"type\":\"Int64\",\"value\":" + std::to_string(value.int64_t_value) + "}";
 
         case Event::kTypeUint64:
-            response = "{\"type\":\"Uint64\",\"value\":" + std::to_string(value.uint64_t_value) + "}";
-            break;
+            return "{\"type\":\"Uint64\",\"value\":" + std::to_string(value.uint64_t_value) + "}";
 
         case Event::kTypeDouble:
-            response = "{\"type\":\"Double\",\"value\":" + std::to_string(value.double_value) + "}";
-            break;
+            return "{\"type\":\"Double\",\"value\":" + std::to_string(value.double_value) + "}";
 
         case Event::kTypeString:
-            response = "{\"type\":\"String\",\"value\":\"" + string_value + "\"}";
-            break;
+            return "{\"type\":\"String\",\"value\":\"" + string_value + "\"}";
 
         case Event::kTypeStartObject:
-            response = "{\"type\":\"StartObject\"}";
-            break;
+            return "{\"type\":\"StartObject\"}";
 
         case Event::kTypeKey:
-            response = "{\"type\":\"Key\",\"value\":\"" + string_value + "\"}";
-            break;
+            return "{\"type\":\"Key\",\"value\":\"" + string_value + "\"}";
 
         case Event::kTypeStartArray:
-            response = "{\"type\":\"StartArray\"}";
-            break;
+            return "{\"type\":\"StartArray\"}";
 
         case Event::kTypeEndArray:
-            response = "{\"type\":\"EndArray\"}";
-            break;
+            return "{\"type\":\"EndArray\"}";
 
         case Event::kTypeEndObject:
-            response = "{\"type\":\"EndObject\"}";
-            break;
+            return "{\"type\":\"EndObject\"}";
 
         case Event::kTypeEnd:
-            response = "{\"type\":\"End\"}";
-            break;
+            return "{\"type\":\"End\"}";
         }
-        return response;
+        return "{\"type\":\"unknown\"}";
     }
 };
 
-} // namespace reader
+} // namespace read
 
 } // namespace bound
 

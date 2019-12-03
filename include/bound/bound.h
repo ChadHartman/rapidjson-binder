@@ -22,131 +22,109 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_BOUND_H_
 #define BOUND_BOUND_H_
 
-#define BOUND_MAJOR_VERSION 1
-#define BOUND_MINOR_VERSION 2
+#define BOUND_MAJOR_VERSION 2
+#define BOUND_MINOR_VERSION 0
 #define BOUND_PATCH_VERSION 0
-#define BOUND_VERSION_STRING "1.2.0"
+#define BOUND_VERSION_STRING "2.0.0"
 
 #ifndef BOUND_PROPS_NAME
 #define BOUND_PROPS_NAME properties
 #endif
 
-#ifdef _WIN32
-#define BOUND_BOUND_H_READ_MODE "rb"
-#define BOUND_BOUND_H_WRITE_MODE "wb"
-#else
-#define BOUND_BOUND_H_READ_MODE "r"
-#define BOUND_BOUND_H_WRITE_MODE "w"
-#endif
+#include <string>
 
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/stringbuffer.h>
-
-#include "property.h"
-#include "writer/writer.h"
-#include "reader/reader.h"
+#include "write/writer.h"
+#include "read/reader.h"
 
 namespace bound
 {
 
-typedef std::map<std::string, std::string> JsonProperties;
-
-// Read from json string.
-// Example:
-//      User user;
-//      std::string json = "{}";
-//      ReadJson(json, user);
-// Returns a ReadStatus instance.
-template <class T>
-//typename std::enable_if<util::is_object<T>::value, const ReadStatus>::type
-const ReadStatus
-FromJson(const std::string &json, T &object)
+template <typename T>
+struct CreateStatus
 {
-    ReadStatus status;
-    reader::Parser<rapidjson::StringStream> parser{rapidjson::StringStream(json.c_str())};
-    reader::Reader<rapidjson::StringStream>(parser).Read(object, status);
-    return status;
+    T instance;
+    const bool success;
+    const std::string error_message;
+};
+
+struct UpdateStatus
+{
+    const bool success;
+    const std::string error_message;
+};
+
+template <typename T>
+CreateStatus<T> CreateWithJson(const std::string &json)
+{
+    T instance;
+    read::ReadStatus status = bound::read::FromJson(json, instance);
+    return CreateStatus<T>{instance, status.success(), status.error_message};
 }
 
-// Read from json file.
-// Example:
-//      User user;
-//      ReadJson("user.json", user);
-// Returns a ReadStatus instance.
-template <class T>
-const ReadStatus FromJsonFile(const std::string filename, T &object)
+template <typename T>
+inline CreateStatus<T> CreateWithJson(const std::string &&json)
 {
-    ReadStatus status;
-    char buffer[65536];
-    FILE *file = fopen(filename.c_str(), BOUND_BOUND_H_READ_MODE);
-    if (file)
+    return CreateWithJson<T>(json);
+}
+
+template <typename T>
+UpdateStatus UpdateWithJson(T &instance, const std::string &json)
+{
+    read::ReadStatus status = bound::read::FromJson(json, instance);
+    return UpdateStatus{status.success(), status.error_message};
+}
+
+template <typename T>
+inline UpdateStatus UpdateWithJson(T &instance, const std::string &&json)
+{
+    return UpdateWithJson(instance, json);
+}
+
+template <typename T>
+inline const std::string ToJson(T &instance, const WriteConfig &config)
+{
+    return write::ToJson(instance, config);
+}
+
+template <typename T>
+inline const std::string ToJson(T &instance, const WriteConfig &&config)
+{
+    return ToJson(instance, config);
+}
+
+template <typename T>
+inline const std::string ToJson(T &instance)
+{
+    return ToJson(instance, WriteConfig());
+}
+
+template <typename T>
+inline const bool ToJsonFile(T &instance, const WriteConfig &config)
+{
+    if (config.GetFilename().length() == 0)
     {
-        reader::Parser<rapidjson::FileReadStream> parser{rapidjson::FileReadStream(file, buffer, sizeof(buffer))};
-        reader::Reader<rapidjson::FileReadStream>{parser}.Read(object, status);
-        fclose(file);
-    }
-    else
-    {
-        status.set_error_message("Unable to open file \"" + filename + "\".");
-    }
-    return status;
-}
-
-// Write to string.
-// Example:
-//    std::string user_json = Write(user);
-//  Returns the json string.
-template <typename T>
-inline std::string ToJson(T &instance)
-{
-    WriteConfig write_config;
-    return ToJson(instance, write_config);
-}
-
-// Write to string.
-// Example:
-//    std::string user_json = Write(user);
-//  Returns the json string.
-template <typename T>
-std::string ToJson(T &instance, const WriteConfig &write_config)
-{
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    writer::Writer<rapidjson::StringBuffer>(writer, write_config).Write(instance);
-    return buffer.GetString();
-}
-
-// Write to some path.
-// Example:
-//      Write(user, "assets/data/user.json");
-//  Returns whether the write was successful.
-template <typename T>
-inline bool ToJsonFile(T &instance, const std::string filename)
-{
-    WriteConfig write_config;
-    return ToJsonFile(instance, filename, write_config);
-}
-
-// Write to some path.
-// Example:
-//      Write(user, "assets/data/user.json");
-//  Returns whether the write was successful.
-template <typename T>
-bool ToJsonFile(T &instance, const std::string filename, const WriteConfig &write_config)
-{
-    FILE *fp = fopen(filename.c_str(), BOUND_BOUND_H_WRITE_MODE);
-    if (fp)
-    {
-        char write_buffer[65536];
-        rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
-        rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
-        writer::Writer<rapidjson::FileWriteStream>(writer, write_config).Write(instance);
-        fclose(fp);
-        return true;
+        return false;
     }
 
-    return false;
+    return write::ToJsonFile(instance, config);
+}
+
+template <typename T>
+inline const bool ToJsonFile(T &instance, const WriteConfig &&config)
+{
+    return ToJsonFile(instance, config);
+}
+
+template <typename T>
+inline const bool ToJsonFile(T &instance, const std::string &filename)
+{
+    return ToJsonFile(instance, WriteConfig().SetFilename(filename));
+}
+
+template <typename T>
+inline const bool ToJsonFile(T &instance, const std::string &&filename)
+{
+    return ToJsonFile(instance, WriteConfig().SetFilename(filename));
 }
 
 } // namespace bound

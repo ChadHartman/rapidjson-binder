@@ -19,67 +19,30 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 
-#ifndef BOUND_READER_PARSER_H_
-#define BOUND_READER_PARSER_H_
+#ifndef BOUND_PROPERTY_ITERATOR_H_
+#define BOUND_PROPERTY_ITERATOR_H_
 
-#include <rapidjson/reader.h>
-#include "event.h"
+#include "property.h"
 
 namespace bound
 {
 
-namespace reader
+template <typename T, T... S, typename F>
+constexpr void for_sequence(std::integer_sequence<T, S...>, F &&f)
 {
+    using unpack_t = int[];
+    (void)unpack_t{(static_cast<void>(f(std::integral_constant<T, S>{})), 0)..., 0};
+}
 
-// Parser which will tokenize JSON parse events
-//  See bound.h for how to use
-template <typename Stream>
-class Parser
+template <typename T, typename F>
+void ListProperties(T &object, F &&f)
 {
-private:
-    Event event_;
-    rapidjson::Reader reader_;
-    Stream stream_;
-
-    bool is_reader_started_ = false;
-    bool is_reader_complete_ = false;
-
-public:
-    Parser(Stream &&stream) : stream_{stream} {}
-
-    const Event &event()
-    {
-        return event_;
-    }
-
-    // Returns true while there's new events
-    bool FetchNextEvent()
-    {
-        if (!is_reader_started_)
-        {
-            reader_.IterativeParseInit();
-            is_reader_started_ = true;
-        }
-
-        if (is_reader_complete_)
-        {
-            return false;
-        }
-
-        if (reader_.IterativeParseComplete())
-        {
-            is_reader_complete_ = true;
-            event_.End();
-            return false;
-        }
-
-        reader_.IterativeParseNext<rapidjson::kParseCommentsFlag>(stream_, event_);
-
-        return true;
-    }
-};
-
-} // namespace reader
+    constexpr auto prop_count = std::tuple_size<decltype(T::BOUND_PROPS_NAME)>::value;
+    for_sequence(std::make_index_sequence<prop_count>{}, [&](auto i) {
+        constexpr auto property = std::get<i>(T::BOUND_PROPS_NAME);
+        f(property);
+    });
+}
 
 } // namespace bound
 

@@ -23,24 +23,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define BOUND_PROPERTY_H_
 
 #include <map>
-#include "util.h"
+#include "types.h"
+#include "type_traits.h"
 
 namespace bound
 {
-
-typedef std::map<std::string, std::string> DynamicProperties;
-
-template <typename T>
-struct is_valid_property
-{
-    enum
-    {
-        value = !std::is_const<T>::value &&
-                (util::is_getter<T>::value ||
-                 util::is_setter<T>::value ||
-                 std::is_member_object_pointer<T>::value)
-    };
-};
 
 // Encapsulates a Class property
 //  Adapted from Guillaume Racicot and fiorentinoing's StackOverflow answers:
@@ -50,48 +37,34 @@ struct Property
 {
     constexpr Property(T Class::*member, const char *name)
         : member{member},
-          name{name} {}
+          name{name},
+          is_json_props{false} {}
 
-    constexpr Property(DynamicProperties Class::*member)
+    constexpr Property(T Class::*member)
         : member{member},
-          name{""} {}
-
-    constexpr Property(bool Class::*member)
-        : member{member},
-          name{""} {}
+          name{""},
+          is_json_props{true} {}
 
     T Class::*member;
     // Can't use std::string because it is not instantiable in a constexpr
     const char *name;
-    const bool is_dyn_props = std::is_same<T, DynamicProperties>::value;
-    const bool is_authorizer = util::is_authorizer<T Class::*>::value;
+    const bool is_json_props;
 };
 
 template <typename Class, typename T>
-constexpr typename std::enable_if<
-    is_valid_property<T Class::*>::value,
-    Property<Class, T>>::type
-property(T Class::*member, const char *name)
+constexpr auto property(T Class::*member, const char *name)
 {
     return Property<Class, T>{member, name};
 }
 
-template <typename Class>
-constexpr typename std::enable_if<
-    std::is_member_object_pointer<DynamicProperties Class::*>::value,
-    Property<Class, DynamicProperties>>::type
-property(DynamicProperties Class::*member)
-{
-    return Property<Class, DynamicProperties>{member};
-}
-
 template <typename Class, typename T>
 constexpr typename std::enable_if<
-    util::is_authorizer<T Class::*>::value,
+    std::is_member_object_pointer<T Class::*>::value &&
+        is_json_properties<T>::value,
     Property<Class, T>>::type
 property(T Class::*member)
 {
-    return Property<Class, T>{member, ""};
+    return Property<Class, T>{member};
 }
 
 } // namespace bound

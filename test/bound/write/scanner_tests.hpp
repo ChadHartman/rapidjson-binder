@@ -3,18 +3,51 @@
 
 #include "tests.h"
 
-namespace scanner_tests
+namespace bound_writer_scanner_tests_h_
 {
+
+struct Bar
+{
+    std::string s;
+    std::vector<int> v;
+    int i = 0;
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&Bar::s, "string"),
+        bound::property(&Bar::v, "array"),
+        bound::property(&Bar::i, "integer"));
+};
+
+class Foo
+{
+private:
+    Bar bar_;
+
+public:
+    Bar &bar()
+    {
+        return bar_;
+    }
+
+    void set_bar(Bar &bar)
+    {
+        bar_ = bar;
+    }
+
+    constexpr static auto BOUND_PROPS_NAME = std::make_tuple(
+        bound::property(&Foo::bar_, "bar_property"),
+        bound::property(&Foo::bar, "bar"),
+        bound::property(&Foo::set_bar, "bar"));
+};
 
 TEST_CASE("Scan Object Properties", "[scanner]")
 {
     bound::WriteConfig config;
-    bound::writer::Scanner scanner{config};
+    bound::write::Scanner scanner{config};
     Foo foo;
 
     SECTION("Unfiltered")
     {
-        // 1 for foo, 2 * (1 for bar, and 3 bar child properties)
         REQUIRE(9 == scanner.Scan(foo));
     }
 
@@ -28,7 +61,7 @@ TEST_CASE("Scan Object Properties", "[scanner]")
 TEST_CASE("Scan Simple Properties", "[scanner]")
 {
     bound::WriteConfig config;
-    bound::writer::Scanner scanner{config};
+    bound::write::Scanner scanner{config};
 
     SECTION("Unfiltered")
     {
@@ -37,11 +70,7 @@ TEST_CASE("Scan Simple Properties", "[scanner]")
         REQUIRE(1 == scanner.Scan(0.0));
         REQUIRE(1 == scanner.Scan(false));
 
-        std::string src{""};
-        REQUIRE(1 == scanner.Scan(src));
-
-        std::string &ref = src;
-        REQUIRE(1 == scanner.Scan(ref));
+        REQUIRE(1 == scanner.Scan(""));
     }
 
     SECTION("Filtered")
@@ -54,28 +83,23 @@ TEST_CASE("Scan Simple Properties", "[scanner]")
         REQUIRE(0 == scanner.Scan(0u));
         REQUIRE(0 == scanner.Scan(0.0));
         REQUIRE(0 == scanner.Scan(false));
-
-        std::string src{""};
-        REQUIRE(0 == scanner.Scan(src));
-
-        std::string &ref = src;
-        REQUIRE(0 == scanner.Scan(ref));
+        REQUIRE(0 == scanner.Scan(""));
     }
 }
 
 template <template <typename T, typename...> class Container, typename T>
-void TestScanArrayUnfiltered(bound::writer::Scanner &scanner, Container<T> &container, T item)
+void TestScanArrayUnfiltered(bound::write::Scanner &scanner, Container<T> &container, T item, int populated_size = 3)
 {
     REQUIRE(1 == scanner.Scan(container));
     container.push_back(item);
     container.push_back(item);
-    REQUIRE(3 == scanner.Scan(container));
+    REQUIRE(populated_size == scanner.Scan(container));
 }
 
 TEST_CASE("Scan Arrays of Fundamentals", "[scanner]")
 {
     bound::WriteConfig config;
-    bound::writer::Scanner scanner{config};
+    bound::write::Scanner scanner{config};
     std::deque<unsigned> deque;
     std::list<bool> list;
     std::vector<int> vector;
@@ -118,7 +142,7 @@ TEST_CASE("Scan Arrays of Fundamentals", "[scanner]")
 TEST_CASE("Scan Array of Objects", "[scanner]")
 {
     bound::WriteConfig config;
-    bound::writer::Scanner scanner{config};
+    bound::write::Scanner scanner{config};
     std::deque<std::string> deque;
     std::list<Foo> list;
 
@@ -127,7 +151,7 @@ TEST_CASE("Scan Array of Objects", "[scanner]")
         std::string empty = "";
         Foo foo;
         TestScanArrayUnfiltered(scanner, deque, empty);
-        TestScanArrayUnfiltered(scanner, list, foo);
+        TestScanArrayUnfiltered(scanner, list, foo, 19);
     }
 
     SECTION("Filtered")
@@ -162,6 +186,6 @@ TEST_CASE("Scan Array of Objects", "[scanner]")
     }
 }
 
-} // namespace scanner_tests
+} // namespace bound_writer_scanner_tests_h_
 
 #endif
