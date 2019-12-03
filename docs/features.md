@@ -143,6 +143,8 @@ struct Parent {
 //  Returns {"json_name":"string value"}
 struct Parent {
 
+    // Use base types (std::string, bool, int, double, etc) when the field should always be rendered
+    // Use bound::Json* types for conditional rendering (they have a render property)
     std::string get() {
         return "string value";
     }
@@ -158,6 +160,7 @@ struct Parent {
 ```
 struct Child {
 
+    // When using a casting operator, a bound::Json* type is required
     operator bound::JsonString() {
         return bound::JsonString{"value"};
     }
@@ -186,6 +189,7 @@ struct Parent {
 struct Parent {
 
     // value = "foo"
+    // Except bound::JsonRaw, other bound::Json* values are incompatible here
     void set(std::string &value) {
         //..
     }
@@ -202,6 +206,7 @@ struct Parent {
 ```
 struct Child {
 
+    // Except bound::JsonRaw, other bound::Json* values are incompatible here
     Child &operator =(const std::string& value) {
         //...
         return *this;
@@ -227,3 +232,26 @@ struct Parent {
 
 Specific values can be filtered out using `bound::WriteConfig`. Alternatively each of the `bound::Json*` types possess a `bool render` field; which when set to `false`, will be skipped.
 
+The `bound::WriteConfig` setters and filters return a reference, so configurations can be chained. 
+
+WriteConfig options: 
+
+* WriteConfig &SetFilename(const std::string &filename)
+    * Only read in `bound::ToJsonFile`
+* WriteConfig &SetFilename(const std::string &&filename)
+    * Only read in `bound::ToJsonFile`
+* WriteConfig &SetMaxDecimalPlaces(int max_dec_places)
+* WriteConfig &Filter(bool value)
+* WriteConfig &Filter(const char *value)
+* WriteConfig &Filter(std::string &&value)
+* WriteConfig &Filter(long value)
+* WriteConfig &Filter(unsigned long value)
+* WriteConfig &Filter(double value)
+* WriteConfig &FilterZeroNumbers()
+* WriteConfig &FilterNullPointers()
+* WriteConfig &FilterEmptyStrings()
+* WriteConfig &FilterEmptyArrays()
+* WriteConfig &FilterEmptyObjects()
+* WriteConfig &FilterEmptiesAndZeroes()
+* WriteConfig &SetPrefix(std::string &prefix)
+* WriteConfig &SetPrefix(std::string &&prefix)
