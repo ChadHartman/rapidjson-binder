@@ -9,12 +9,14 @@
 * `std::map<K, V>`
     * When parsed, the container is cleared first
 * `class`/`struct` with `constexpr static std::tuple<...> properties` field and a default constructor
-* `bound::JsonFloat`
-* `bound::JsonBool`
-* `bound::JsonUint`
-* `bound::JsonInt`
-* `bound::JsonString`
-* `bound::JsonRaw`
+* `bound::Json*` objects:
+    * `bound::JsonFloat`
+    * `bound::JsonBool`
+    * `bound::JsonUint`
+    * `bound::JsonInt`
+    * `bound::JsonString`
+    * `bound::JsonRaw`
+    *  Note: only available as fields and getters, not setters; except `bound::JsonRaw`. When a setter is necessary, use the base type (`bool`, `int`, `std::string`, etc).
 
 ## Property Declaration
 
