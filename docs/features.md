@@ -236,22 +236,22 @@ The `bound::WriteConfig` setters and filters return a reference, so configuratio
 
 WriteConfig options: 
 
-* WriteConfig &SetFilename(const std::string &filename)
+* `WriteConfig &SetFilename(const std::string &filename)`
     * Only read in `bound::ToJsonFile`
-* WriteConfig &SetFilename(const std::string &&filename)
+* `WriteConfig &SetFilename(const std::string &&filename)`
     * Only read in `bound::ToJsonFile`
-* WriteConfig &SetMaxDecimalPlaces(int max_dec_places)
-* WriteConfig &Filter(bool value)
-* WriteConfig &Filter(const char *value)
-* WriteConfig &Filter(std::string &&value)
-* WriteConfig &Filter(long value)
-* WriteConfig &Filter(unsigned long value)
-* WriteConfig &Filter(double value)
-* WriteConfig &FilterZeroNumbers()
-* WriteConfig &FilterNullPointers()
-* WriteConfig &FilterEmptyStrings()
-* WriteConfig &FilterEmptyArrays()
-* WriteConfig &FilterEmptyObjects()
-* WriteConfig &FilterEmptiesAndZeroes()
-* WriteConfig &SetPrefix(std::string &prefix)
-* WriteConfig &SetPrefix(std::string &&prefix)
+* `WriteConfig &SetMaxDecimalPlaces(int max_dec_places)`
+* `WriteConfig &Filter(bool value)`
+* `WriteConfig &Filter(const char *value)`
+* `WriteConfig &Filter(std::string &&value)`
+* `WriteConfig &Filter(long value)`
+* `WriteConfig &Filter(unsigned long value)`
+* `WriteConfig &Filter(double value)`
+* `WriteConfig &FilterZeroNumbers()`
+* `WriteConfig &FilterNullPointers()`
+* `WriteConfig &FilterEmptyStrings()`
+* `WriteConfig &FilterEmptyArrays()`
+* `WriteConfig &FilterEmptyObjects()`
+* `WriteConfig &FilterEmptiesAndZeroes()`
+* `WriteConfig &SetPrefix(std::string &prefix)`
+* `WriteConfig &SetPrefix(std::string &&prefix)`
