@@ -26,7 +26,20 @@ int main()
         "\"numbers\":[1,2,3]"
         "}";
 
-    Foo foo = bound::FromJson<Foo>(json);
+    bound::CreateStatus<Foo> status = bound::CreateWithJson<Foo>(json);
+    Foo foo = status.instance;
+
+    if (status.success)
+    {
+        printf("Parsed: %s\n", bound::ToJson(foo).c_str());
+        // Enhanced writing options are found in bound::WriteConfig:
+        // printf("Parsed: %s\n", bound::ToJson(foo, bound::WriteConfig().SetPrefix("  ")).c_str());
+    }
+    else
+    {
+        printf("Failed to create: \"%s\"\n", status.error_message.c_str());
+    }
+
     assert(foo.bar.value == "bar_value");
     assert(foo.numbers.size() == 3);
     assert(foo.numbers[0] == 1);

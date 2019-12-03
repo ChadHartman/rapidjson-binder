@@ -365,7 +365,7 @@ public:
     Read(T &instance)
     {
 #ifdef BOUND_READ_READER_H_DEBUG
-        printf("Reader#Read[!bound&!seq_container&!json_properties]\n");
+        printf("Reader#Read[!bound&!seq_container&!json_properties] type=%s\n", typeid(instance).name());
 #endif
         // Assignment operations require an lvalue ref
         const static auto null_ptr = nullptr;

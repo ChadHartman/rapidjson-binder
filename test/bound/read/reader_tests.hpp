@@ -250,6 +250,38 @@ TEST_CASE("Reader Tests", "[reader_tests]")
         REQUIRE("[\"Johnny\",\"Nathan\"]" == o.addl_props.at("aliases").value);
         REQUIRE("{\"race\":\"purple\"}" == o.addl_props.at("demographics").value);
     }
+
+    SECTION("bound::JsonString")
+    {
+
+        auto test = [](std::string json, std::string expected) {
+            bound::JsonString value;
+            REQUIRE(bound::read::FromJson(json, value).success());
+            REQUIRE(expected == value.value);
+        };
+
+        test("\"foo\"", "foo");
+        test("true", "true");
+        test("22.22", "22.220000");
+        test("11", "11");
+        test("-11", "-11");
+    }
+
+    SECTION("bound::JsonBool")
+    {
+
+        auto test = [](std::string json, bool expected) {
+            bound::JsonBool value;
+            REQUIRE(bound::read::FromJson(json, value).success());
+            REQUIRE(expected == value.value);
+        };
+
+        test("true", true);
+        test("22.22", true);
+        test("0.0", false);
+        test("0", false);
+        test("234", true);
+    }
 }
 
 } // namespace bound_read_reader_tests_hpp_

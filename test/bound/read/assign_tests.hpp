@@ -74,6 +74,11 @@ TEST_CASE("Assign Tests", "[assign_tests]")
         test<bound::JsonString, uint64_t>(0, "0");
         test<bound::JsonString, uint64_t>(203923049, "203923049");
     }
+    SECTION("JsonString|string")
+    {
+        test<bound::JsonString, std::string>("foo", "foo");
+        test<bound::JsonString, std::string>("bar", "bar");
+    }
     SECTION("JsonString|double")
     {
         bound::JsonString target;
