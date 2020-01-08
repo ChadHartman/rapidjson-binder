@@ -22,12 +22,23 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOUND_READ_READER_H_
 #define BOUND_READ_READER_H_
 
+#ifndef BOUND_FILE_READ_BUFFER_SIZE
+#define BOUND_FILE_READ_BUFFER_SIZE 65536
+#endif
+
+#ifdef _WIN32
+#define BOUND_BOUND_H_READ_MODE "rb"
+#else
+#define BOUND_BOUND_H_READ_MODE "r"
+#endif
+
 #include "parser.h"
 #include "read_target.h"
 #include "assign.h"
 #include "read_status.h"
 #include "../type_traits.h"
 #include "raw_json_reader.h"
+#include <rapidjson/filereadstream.h>
 
 // #define BOUND_READ_READER_H_DEBUG
 
@@ -429,7 +440,29 @@ const ReadStatus FromJson(const std::string &json, T &instance)
     return status;
 }
 
+template <typename T>
+const ReadStatus FromJsonFile(const std::string &path, T &instance)
+{
+    ReadStatus status;
+    char buffer[BOUND_FILE_READ_BUFFER_SIZE];
+    FILE *file = fopen(path.c_str(), BOUND_BOUND_H_READ_MODE);
+
+    if (file)
+    {
+        Parser<rapidjson::FileReadStream> parser{rapidjson::FileReadStream(file, buffer, sizeof(buffer))};
+        Reader<rapidjson::FileReadStream>{parser, status}.Read(instance);
+        fclose(file);
+    }
+    else
+    {
+        status.error_message = "Unable to open file \"" + path + "\".";
+    }
+
+    return status;
+}
+
 } // namespace read
+
 } // namespace bound
 
 #endif

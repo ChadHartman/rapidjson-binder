@@ -54,11 +54,51 @@ TEST_CASE("CreateWithJson", "[create_with_json]")
     }
 }
 
+TEST_CASE("CreateWithJsonFile", "[create_with_json_file]")
+{
+    const std::string path = "test_temp.json";
+
+    SECTION("CreateStatus<T> CreateWithJsonFile(const std::string &path)")
+    {
+        Foo foo_original;
+        foo_original.value = 22;
+        bound::ToJsonFile(foo_original, path);
+
+        auto status = bound::CreateWithJsonFile<Foo>(path);
+        REQUIRE(status.success);
+        REQUIRE(0 == status.error_message.length());
+        REQUIRE(22 == status.instance.value);
+        // Demonstate it's mutable
+        status.instance.value = 18;
+    }
+
+    SECTION("CreateStatus<T> CreateWithJsonFile(const std::string &&path)")
+    {
+        Foo foo_original;
+        foo_original.value = 23;
+        bound::ToJsonFile(foo_original, path);
+
+        auto status = bound::CreateWithJsonFile<Foo>("test_temp.json");
+        REQUIRE(status.success);
+        REQUIRE(0 == status.error_message.length());
+        REQUIRE(23 == status.instance.value);
+        // Demonstate it's mutable
+        status.instance.value = 18;
+    }
+
+    SECTION("CreateWithJsonFile invalid json")
+    {
+        auto status = bound::CreateWithJsonFile<Foo>("malformed.json");
+        REQUIRE(!status.success);
+        REQUIRE(0 < status.error_message.length());
+    }
+}
+
 TEST_CASE("UpdateWithJson", "[update_with_json]")
 {
     Foo foo = {3};
 
-    SECTION("UpdateStatus UpdateWithJson(const std::string &json)")
+    SECTION("UpdateStatus UpdateWithJson(T &instance, const std::string &json)")
     {
         const std::string json = "{\"value\":17}";
         auto status = bound::UpdateWithJson(foo, json);
@@ -67,7 +107,7 @@ TEST_CASE("UpdateWithJson", "[update_with_json]")
         REQUIRE(17 == foo.value);
     }
 
-    SECTION("UpdateStatus UpdateWithJson(const std::string &&json)")
+    SECTION("UpdateStatus UpdateWithJson(T &instance, const std::string &&json)")
     {
         auto status = bound::UpdateWithJson(foo, "{\"value\":18}");
         REQUIRE(status.success);
@@ -78,6 +118,41 @@ TEST_CASE("UpdateWithJson", "[update_with_json]")
     SECTION("UpdateWithJson invalid json")
     {
         auto status = bound::UpdateWithJson(foo, "{\"value\":}");
+        REQUIRE(!status.success);
+        REQUIRE(0 < status.error_message.length());
+    }
+}
+
+TEST_CASE("UpdateWithJsonFile", "[update_with_json_file]")
+{
+    Foo foo_mutable = {0};
+    const std::string path = "test_temp.json";
+
+    SECTION("UpdateStatus UpdateWithJsonFile(T &instance, const std::string &json)")
+    {
+        const Foo foo_original = {32};
+        bound::ToJsonFile(foo_original, path);
+
+        auto status = bound::UpdateWithJsonFile(foo_mutable, path);
+        REQUIRE(status.success);
+        REQUIRE(0 == status.error_message.length());
+        REQUIRE(32 == foo_mutable.value);
+    }
+
+    SECTION("UpdateStatus UpdateWithJsonFile(T &instance, const std::string &&json)")
+    {
+        const Foo foo_original = {33};
+        bound::ToJsonFile(foo_original, path);
+
+        auto status = bound::UpdateWithJsonFile(foo_mutable, "test_temp.json");
+        REQUIRE(status.success);
+        REQUIRE(0 == status.error_message.length());
+        REQUIRE(33 == foo_mutable.value);
+    }
+
+    SECTION("UpdateWithJsonFile invalid json")
+    {
+        auto status = bound::UpdateWithJsonFile(foo_mutable, "malformed.json");
         REQUIRE(!status.success);
         REQUIRE(0 < status.error_message.length());
     }

@@ -27,10 +27,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 #ifdef _WIN32
-#define BOUND_BOUND_H_READ_MODE "rb"
 #define BOUND_BOUND_H_WRITE_MODE "wb"
 #else
-#define BOUND_BOUND_H_READ_MODE "r"
 #define BOUND_BOUND_H_WRITE_MODE "w"
 #endif
 

@@ -57,7 +57,7 @@ template <typename T>
 CreateStatus<T> CreateWithJson(const std::string &json)
 {
     T instance;
-    read::ReadStatus status = bound::read::FromJson(json, instance);
+    read::ReadStatus status = read::FromJson(json, instance);
     return CreateStatus<T>{instance, status.success(), status.error_message};
 }
 
@@ -68,9 +68,23 @@ inline CreateStatus<T> CreateWithJson(const std::string &&json)
 }
 
 template <typename T>
+CreateStatus<T> CreateWithJsonFile(const std::string &path)
+{
+    T instance;
+    read::ReadStatus status = read::FromJsonFile(path, instance);
+    return CreateStatus<T>{instance, status.success(), status.error_message};
+}
+
+template <typename T>
+inline CreateStatus<T> CreateWithJsonFile(const std::string &&path)
+{
+    return CreateWithJsonFile<T>(path);
+}
+
+template <typename T>
 UpdateStatus UpdateWithJson(T &instance, const std::string &json)
 {
-    read::ReadStatus status = bound::read::FromJson(json, instance);
+    read::ReadStatus status = read::FromJson(json, instance);
     return UpdateStatus{status.success(), status.error_message};
 }
 
@@ -78,6 +92,19 @@ template <typename T>
 inline UpdateStatus UpdateWithJson(T &instance, const std::string &&json)
 {
     return UpdateWithJson(instance, json);
+}
+
+template <typename T>
+UpdateStatus UpdateWithJsonFile(T &instance, const std::string &path)
+{
+    read::ReadStatus status = read::FromJsonFile(path, instance);
+    return UpdateStatus{status.success(), status.error_message};
+}
+
+template <typename T>
+inline UpdateStatus UpdateWithJsonFile(T &instance, const std::string &&path)
+{
+    return UpdateWithJsonFile(instance, path);
 }
 
 template <typename T>
