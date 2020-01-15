@@ -123,37 +123,41 @@ public:
             is_uint<T>::value ||
             std::is_floating_point<T>::value,
         unsigned>::type
-    Scan(const T value)
+    Scan(const T &value)
     {
         return write_config_.IsFiltered(value) ? 0 : 1;
     }
 
-    unsigned Scan(const JsonRaw value)
+    unsigned Scan(const JsonRaw &value)
     {
+        if (!value.render)
+        {
+            return 0;
+        }
         return value.value.length() == 0 ? 0 : 1;
     }
 
-    unsigned Scan(const JsonString value)
+    unsigned Scan(const JsonString &value)
     {
         return value.render ? Scan(value.value) : 0;
     }
 
-    unsigned Scan(const JsonFloat value)
+    unsigned Scan(const JsonFloat &value)
     {
         return value.render ? Scan(value.value) : 0;
     }
 
-    unsigned Scan(const JsonBool value)
+    unsigned Scan(const JsonBool &value)
     {
         return value.render ? Scan(value.value) : 0;
     }
 
-    unsigned Scan(const JsonInt value)
+    unsigned Scan(const JsonInt &value)
     {
         return value.render ? Scan(value.value) : 0;
     }
 
-    unsigned Scan(const JsonUint value)
+    unsigned Scan(const JsonUint &value)
     {
         return value.render ? Scan(value.value) : 0;
     }

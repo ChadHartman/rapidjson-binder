@@ -40,6 +40,24 @@ public:
         bound::property(&Foo::set_bar, "bar"));
 };
 
+TEST_CASE("Scan JsonRaw", "[scan_json_raw]")
+{
+    bound::WriteConfig config;
+    bound::write::Scanner scanner{config};
+
+    bound::JsonRaw value;
+
+    REQUIRE(0 == scanner.Scan(value));
+
+    value.value = "foo";
+
+    REQUIRE(1 == scanner.Scan(value));
+
+    value.render = false;
+
+    REQUIRE(0 == scanner.Scan(value));
+}
+
 TEST_CASE("Scan Object Properties", "[scanner]")
 {
     bound::WriteConfig config;
